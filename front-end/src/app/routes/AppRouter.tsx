@@ -1,12 +1,17 @@
 // src/app/routes/AppRouter.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import UploadPage from "@infrastructure/ui/UploadPage"
+import { AppLayout } from "@/ui/layout/AppLayout";
+import LandingPage from "@/modules/landing/pages/LandingPage"
+import UploadPage from "@/modules/upload/pages/UploadPage"
 
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<UploadPage />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/upload" element={<UploadPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

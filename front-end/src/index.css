@@ -17,6 +17,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html{@apply bg-background-light dark:bg-background-dark}
+
 a {
   font-weight: 500;
   color: #646cff;
