@@ -1,12 +1,13 @@
 import { AppHeader } from "@/ui/layout/AppHeader"
 import { Outlet } from "react-router-dom"
 import { AppFooter } from "@/ui/layout/AppFooter"
+import React from "react"
 
 
-export function AppLayout () {
+export function AppLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
-      
+    <div className="min-h-screen  flex flex-col">
+
       <AppHeader />
 
       <main className="flex-1 w-full">

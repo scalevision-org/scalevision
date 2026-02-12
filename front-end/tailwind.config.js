@@ -1,63 +1,31 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss"
+
 export default {
-    darkMode: ["class"],
-    content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  darkMode: "class",
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
-  	extend: {
-  		borderRadius: {
-  			lg: 'var(--radius)',
-  			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
-  		},
-		colors: {
-			background: {
-				DEFAULT: '#F9FAFB',
-				light: '#F9FAFB',
-				dark: '#0E1513'
-			},
-			foreground: 'hsl(var(--foreground))',
-			card: {
-				DEFAULT: 'hsl(var(--card))',
-				foreground: 'hsl(var(--card-foreground))'
-			},
-			popover: {
-				DEFAULT: 'hsl(var(--popover))',
-				foreground: 'hsl(var(--popover-foreground))'
-			},
-			primary: '#10B981',
-			secondary: {
-				DEFAULT: 'hsl(var(--secondary))',
-				foreground: 'hsl(var(--secondary-foreground))'
-			},
-			muted: {
-				DEFAULT: 'hsl(var(--muted))',
-				foreground: 'hsl(var(--muted-foreground))'
-			},
-			accent: '#34D399',
-			destructive: {
-				DEFAULT: 'hsl(var(--destructive))',
-				foreground: 'hsl(var(--destructive-foreground))'
-			},
-			surface: {
-				light: '#FFFFFF',
-				dark: '#16201D'
-			},
-			border: {
-				DEFAULT: '#1F2A27',
-				dark: '#1F2A27'
-			},
-			input: 'hsl(var(--input))',
-			ring: 'hsl(var(--ring))',
-			chart: {
-				'1': 'hsl(var(--chart-1))',
-				'2': 'hsl(var(--chart-2))',
-				'3': 'hsl(var(--chart-3))',
-				'4': 'hsl(var(--chart-4))',
-				'5': 'hsl(var(--chart-5))'
-			}
-		}
-  	}
+    extend: {
+      colors: {
+        primary: "#10B981",
+        accent: "#34D399",
+
+        "bg-light": "#F9FAFB",
+        "bg-dark": "#0E1513",
+
+        "surface-light": "#FFFFFF",
+        "surface-dark": "#16201D",
+
+        "text-light": "#1F2937",
+        "text-dark": "#ECFDF5",
+
+        "text-muted-light": "#6B7280",
+        "text-muted-dark": "#A7F3D0",
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+      },
+    },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [],
+} satisfies Config
 

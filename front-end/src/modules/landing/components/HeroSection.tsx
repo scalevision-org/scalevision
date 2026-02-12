@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
+import React from "react"
 
 export function HeroSection() {
   const navigate = useNavigate()
@@ -27,6 +28,12 @@ export function HeroSection() {
           Upload Video
         </Button>
       </div>
+    
+
+
+
+
+
     </section>
   )
 }
