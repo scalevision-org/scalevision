@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 
 export function AppHeader() {
   return (
- <header className="w-full border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+    <header className="w-full border-b border-slate-200 dark:border-[#1F2A27] bg-surface-light dark:bg-surface-dark transition-colors">
       <div className="w-full px-6 lg:px-16 py-4 flex items-center justify-between">
         
         {/* Logo */}
@@ -22,7 +22,7 @@ export function AppHeader() {
           <a href="#" className="hover:text-primary transition-colors">
             Pricing
           </a>
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="#features" className="hover:text-primary transition-colors">
             Features
           </a>
         </nav>
