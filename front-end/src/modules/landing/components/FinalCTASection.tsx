@@ -1,5 +1,9 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 export function FinalCTASection() {
+  const navigate = useNavigate()
+
+
   return (
     <section className="w-full bg-bg-light dark:bg-bg-dark/50 mt-24 border-t border-slate-200 dark:border-[#1F2A27]">
       <div className="max-w-4xl mx-auto px-6 py-24 lg:py-32 flex flex-col items-center gap-8 text-center">
@@ -15,6 +19,7 @@ export function FinalCTASection() {
         </div>
 
         <button
+         onClick={() => navigate("/upload")}
           className="
             min-w-[280px]
             h-14

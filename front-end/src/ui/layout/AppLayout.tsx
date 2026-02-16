@@ -6,7 +6,7 @@ import React from "react"
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen  flex flex-col">
+    <div className="min-h-screen w-full flex flex-col ">
 
       <AppHeader />
 
