@@ -2,15 +2,20 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AppLayout } from "@/ui/layout/AppLayout";
 import LandingPage from "@/modules/landing/pages/LandingPage"
+import { PricingPage } from "@/modules/landing/pages/PricingPage"
+import { FeaturesPage } from "@/modules/landing/pages/FeaturesPage"
 import UploadPage from "@/modules/upload/pages/UploadPage"
 import { ConfigurationPage } from "@/modules/configuration/pages/ConfigurationPage";
 import { Config } from "@/modules/configuration/pages/Config";
+
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/configuration" element={<ConfigurationPage />} />
           <Route path="/config" element={<Config />} />
