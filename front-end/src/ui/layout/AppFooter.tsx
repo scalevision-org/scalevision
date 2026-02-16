@@ -2,8 +2,8 @@ import { Logo } from "@/ui/components/Logo"
 
 export function AppFooter() {
   return (
-    <footer className="w-full border-t border-border mt-24">
-      <div className="w-full px-6 lg:px-16 py-12 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-muted-foreground">
+    <footer className="w-full border-t border-slate-200 dark:border-[#1F2A27] bg-surface-light dark:bg-surface-dark mt-24">
+      <div className="max-w-7xl mx-auto px-6 lg:px-16 py-12 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-text-muted-light dark:text-text-muted-dark">
         
         <div className="flex items-center gap-2 opacity-70">
           <Logo />
@@ -11,13 +11,13 @@ export function AppFooter() {
         </div>
 
         <div className="flex gap-8">
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="#privacy" className="hover:text-primary transition-colors">
             Privacy
           </a>
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="#terms" className="hover:text-primary transition-colors">
             Terms
           </a>
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="#contact" className="hover:text-primary transition-colors">
             Contact
           </a>
         </div>
