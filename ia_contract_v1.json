@@ -1,0 +1,166 @@
+{
+    "contract_version": "1.0.0",
+    "release_stage": "MVP",
+    "info": {
+        "title": "Contrato AI ↔ Backend",
+        "description": "Contrato de interfaz entre Backend y servicio de IA para la automatización del recorte de video (MVP)",
+        "version": "1.0.0",
+        "contact": {
+            "lead": "Laura Dominguez",
+            "team_ai": "Jorge Castro"
+        }
+    },
+    "servers": [
+        {
+            "url": "https://ai-service.scalevision.app/ai/v1",
+            "description": "Servidor del servicio de Inteligencia Artificial"
+        }
+    ],
+    "global_constraints": {
+        "max_file_size_mb": 100,
+        "max_duration_seconds": 240,
+        "max_fps": 30,
+        "allowed_codecs": [
+            "h264"
+        ],
+        "container": [
+            "mp4",
+            "mov"
+        ],
+        "pixel_format": "yuv420p",
+        "max_resolution": "1920x1080",
+        "min_appearance_ratio": 0.8,
+        "technologies_used": [
+            "YOLO",
+            "ByteTrack",
+            "FFmpeg"
+        ]
+    },
+    "execution_policies": {
+        "job_expiration": {
+            "timeout_seconds": 120,
+            "on_timeout": [
+                "BACKEND_MUST_POLL_STATUS",
+                "MARK_JOB_AS_EXPIRED"
+            ],
+            "description": "Si no se recibe una respuesta del servicio de IA dentro del tiempo definido, el Backend debe consultar el estado del trabajo mediante polling o marcarlo como expirado."
+        }
+    },
+    "safe_mode": {
+        "enabled": true,
+        "confidence_threshold": 0.6,
+        "fallback_strategy": "CENTER_CROP",
+        "trigger_conditions": [
+            "RECOVERABLE_AI_ERROR",
+            "LOW_CONFIDENCE_DETECTION"
+        ],
+        "description": "Si el servicio de IA retorna un error recuperable o una confianza menor al umbral definido, el Backend debe ignorar las coordenadas dinámicas y aplicar un recorte central estático."
+    },
+    "endpoints": {
+        "phase_1_discovery": {
+            "request": {
+                "method": "POST",
+                "path": "/scan",
+                "summary": "Enviar video para análisis automático",
+                "body": {
+                    "job_id": "string (UUID)",
+                    "video_url": "string (OCI PAR URL)"
+                }
+            },
+            "polling": {
+                "method": "GET",
+                "path": "/scan/{job_id}",
+                "responses": {
+                    "pending": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "PENDING",
+                        "message": "Video aceptado y en espera de procesamiento",
+                        "progress": "integer"
+                    },
+                    "processing": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "PROCESSING",
+                        "message": "Analizando el contenido del video",
+                        "progress": "integer"
+                    },
+                    "success": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "SUCCESS",
+                        "message": "Análisis completado. Miniaturas generadas",
+                        "subjects": [
+                            {
+                                "id": "string",
+                                "thumbnail_base64": "string",
+                                "appearance_ratio": "float",
+                                "reference_data": {
+                                    "timestamp": "float",
+                                    "box": [
+                                        "float",
+                                        "float",
+                                        "float",
+                                        "float"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "failed": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "FAILED",
+                        "error_code": "MAX_DURATION_EXCEEDED",
+                        "message": "La duración del video excede el límite máximo permitido"
+                    }
+                }
+            }
+        },
+        "phase_2_execution": {
+            "request": {
+                "method": "POST",
+                "path": "/process-video",
+                "summary": "Iniciar el renderizado final del video recortado",
+                "body": {
+                    "job_id": "string (UUID)",
+                    "target_subject_id": "string",
+                    "output_bucket_path": "string (Ruta OCI de salida)"
+                }
+            },
+            "polling": {
+                "method": "GET",
+                "path": "/process-video/{job_id}",
+                "responses": {
+                    "processing": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "PROCESSING",
+                        "message": "Recortando y renderizando el video",
+                        "progress": "integer",
+                        "stage": "FFMPEG_CROP"
+                    },
+                    "success": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "SUCCESS",
+                        "message": "Renderizado final completado correctamente",
+                        "applied_strategy": {
+                            "type": "DYNAMIC_CROP | CENTER_CROP",
+                            "reason": "AI_CONFIDENCE_BELOW_THRESHOLD"
+                        },
+                        "output_video_url": "string (URL final del video en OCI)",
+                        "execution_time_seconds": "float"
+                    },
+                    "failed": {
+                        "job_id": "UUID",
+                        "request_id": "UUID",
+                        "status": "FAILED",
+                        "error_code": "RENDERING_FAILED",
+                        "message": "Ocurrió un error durante el proceso de renderizado del video"
+                    }
+                }
+            }
+        }
+    }
+}
