@@ -3,7 +3,6 @@ package com.scalevision.backend.domain.model;
 import com.scalevision.backend.domain.exception.InvalidStatusTransitionException;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 public class ProcessingJob {
@@ -27,8 +26,15 @@ public class ProcessingJob {
             Integer targetDuration,
             String focusArea
     ) {
-        this.id = Objects.requireNonNull(id, "id is required");
-        this.videoUrl = Objects.requireNonNull(videoUrl, "videoUrl is required");
+        if (id == null) {
+            throw new IllegalArgumentException("id is required");
+        }
+        if (videoUrl == null || videoUrl.isBlank()) {
+            throw new IllegalArgumentException("videoUrl is required");
+        }
+
+        this.id = id;
+        this.videoUrl = videoUrl;
         this.targetAspectRatio = targetAspectRatio;
         this.targetDuration = targetDuration;
         this.focusArea = focusArea;
@@ -38,13 +44,17 @@ public class ProcessingJob {
     }
 
     public boolean canTransitionTo(JobStatus nextStatus) {
-        Objects.requireNonNull(nextStatus, "nextStatus is required");
+        if (nextStatus == null) {
+            return false;
+        }
 
-        return switch (this.status) {
-            case PENDING -> nextStatus == JobStatus.PROCESSING || nextStatus == JobStatus.FAILED;
-            case PROCESSING -> nextStatus == JobStatus.COMPLETED || nextStatus == JobStatus.FAILED;
-            case COMPLETED, FAILED -> false;
-        };
+        if (this.status == JobStatus.PENDING) {
+            return nextStatus == JobStatus.PROCESSING || nextStatus == JobStatus.FAILED;
+        }
+        if (this.status == JobStatus.PROCESSING) {
+            return nextStatus == JobStatus.COMPLETED || nextStatus == JobStatus.FAILED;
+        }
+        return false;
     }
 
     public void updateStatus(JobStatus nextStatus) {

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -31,7 +30,7 @@ class ProcessingJobTest {
         ProcessingJob job = buildJob();
 
         assertTrue(job.canTransitionTo(JobStatus.PROCESSING));
-        assertDoesNotThrow(() -> job.updateStatus(JobStatus.PROCESSING));
+        job.updateStatus(JobStatus.PROCESSING);
         assertEquals(JobStatus.PROCESSING, job.getStatus());
     }
 
@@ -80,6 +79,13 @@ class ProcessingJobTest {
 
         assertTrue(job.getUpdatedAt().isAfter(previousUpdatedAt)
                 || job.getUpdatedAt().isEqual(previousUpdatedAt));
+    }
+
+    @Test
+    void shouldNotAllowNullStatusTransition() {
+        ProcessingJob job = buildJob();
+
+        assertFalse(job.canTransitionTo(null));
     }
 
     private ProcessingJob buildJob() {
