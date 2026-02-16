@@ -1,7 +1,8 @@
-
-import React from "react"
 import './App.css'
-import { AppRouter } from './app/routes/AppRouter';
+import { AppLayout } from "@/ui/layout/AppLayout";
+import LandingPage from "@/modules/landing/pages/LandingPage"
+// Ponemos las llaves porque NO es una exportación default
+import { AppRouter } from "@/app/routes/AppRouter"; 
 
 function App() {
   return (
