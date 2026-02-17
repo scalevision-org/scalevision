@@ -22,7 +22,7 @@ como parte del MVP Prototype.
 -   Spring Web
 -   Spring Data JPA
 -   H2 Database (in-memory)
--   WebSocket
+-   Polling HTTP (consulta de estado de jobs)
 -   Lombok
 -   Bean Validation
 
