@@ -3,4 +3,4 @@ uvicorn
 numpy
 torch
 ultralytics
-opencv-pythona
+opencv-python
