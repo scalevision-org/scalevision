@@ -44,7 +44,9 @@ export const PreviewPage = ({
             Reframed Video Preview
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Review your vertical crop and select the subject to track.
+            {hasMultipleFaces
+              ? 'Review your vertical crop and select the subject to track.'
+              : 'Previsualiza tu video antes de exportar o compartir'}
           </p>
         </div>
       </div>
