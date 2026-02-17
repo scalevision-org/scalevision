@@ -39,7 +39,7 @@ export const PreviewPage = ({
   return (
     <div className="min-h-screen bg-bg-light dark:bg-bg-dark transition-colors">
       {/* Header Section */}
-      <div className="bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/10">
+      <div className="bg-white dark:bg-bg-dark  dark:border-white/5 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
             Reframed Video Preview
@@ -54,8 +54,8 @@ export const PreviewPage = ({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Face Selection (Hidden on mobile, shown on md+) */}
+        <div className="flex justify-evenly flex-col sm:flex-row gap-8">
+          {/* Face Selection */}
           {hasMultipleFaces && (
             <SelectFaceToTrack
               faces={detectedFaces}
@@ -66,20 +66,12 @@ export const PreviewPage = ({
           )}
 
           {/* Video Preview */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-8">
+          <div className=" flex flex-col  items-center justify-evenly gap-8">
             {/* Phone Mockup */}
             <VideoPreviewMock
               videoUrl={currentVideoUrl}
               isPlaying={isPlayingVideo}
               onPlayPauseToggle={setIsPlayingVideo}
-            />
-
-            <VideoActions
-              videoUrl={currentVideoUrl}
-              onExportTikTok={() => console.log('Export TikTok')}
-              onExportYouTube={() => console.log('Export YouTube')}
-              onExportInstagram={() => console.log('Export Instagram')}
-              onDownload={(blob) => console.log('Video downloaded:', blob)}
             />
 
             {/* Video Info */}
@@ -94,7 +86,18 @@ export const PreviewPage = ({
                 detected in video
               </p>
             </div>
+                        {/* Action Buttons */}
+           <VideoActions
+              videoUrl={currentVideoUrl}
+              onExportTikTok={() => console.log('Export TikTok')}
+              onExportYouTube={() => console.log('Export YouTube')}
+              onExportInstagram={() => console.log('Export Instagram')}
+              onDownload={(blob) => console.log('Video downloaded:', blob)}
+            />
+     
           </div>
+
+     
         </div>
       </div>
     </div>
