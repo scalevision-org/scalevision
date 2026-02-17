@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { SelectFaceToTrack } from '../components/SelectFaceToTrack';
 import { VideoPreviewMock } from '../components/VideoPreviewMock';
+import { VideoActions } from '../components/VideoActions';
 import { DetectedFace } from '@/domain/types/face.types';
 
 interface PreviewPageProps {
@@ -71,6 +72,14 @@ export const PreviewPage = ({
               videoUrl={currentVideoUrl}
               isPlaying={isPlayingVideo}
               onPlayPauseToggle={setIsPlayingVideo}
+            />
+
+            <VideoActions
+              videoUrl={currentVideoUrl}
+              onExportTikTok={() => console.log('Export TikTok')}
+              onExportYouTube={() => console.log('Export YouTube')}
+              onExportInstagram={() => console.log('Export Instagram')}
+              onDownload={(blob) => console.log('Video downloaded:', blob)}
             />
 
             {/* Video Info */}
