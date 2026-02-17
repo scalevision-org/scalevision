@@ -28,7 +28,9 @@ buildNumber.properties
 *.iws
 *.iml
 *.ipr
-out/
+/out/
+!src/main/java/com/scalevision/backend/application/port/out/
+!src/main/java/com/scalevision/backend/application/port/out/**
 
 ### VSCode ###
 .vscode/
@@ -85,5 +87,3 @@ coverage/
 ### Build Tool ###
 .gradle/
 build/
-
-
