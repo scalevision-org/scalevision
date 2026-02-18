@@ -2,6 +2,10 @@ package com.scalevision.backend.application.port.out;
 
 import com.scalevision.backend.application.port.out.dto.AIProcessingRequest;
 import com.scalevision.backend.application.port.out.dto.AIProcessingResponse;
+import com.scalevision.backend.application.port.out.dto.AIScanSubjectsRequest;
+import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
+import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
+import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
 
 /**
  * Backend contract to communicate with AI service.
@@ -15,4 +19,10 @@ public interface AIServicePort {
      * @return AI acknowledgment data
      */
     AIProcessingResponse processVideo(AIProcessingRequest request);
+
+    AIScanSubjectsResponse scanSubjects(AIScanSubjectsRequest request);
+
+    AIWorkerJobStatusResponse getJobStatus(String jobId);
+
+    AIWorkerHealthResponse getHealth();
 }

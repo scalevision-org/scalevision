@@ -5,6 +5,7 @@ package com.scalevision.backend.application.port.out.dto;
  */
 public record AIProcessingResponse(
         String aiTaskId,
-        String status
+        String status,
+        Integer estimatedProcessingTimeSec
 ) {
 }

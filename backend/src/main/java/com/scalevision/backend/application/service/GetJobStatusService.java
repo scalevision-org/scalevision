@@ -31,6 +31,7 @@ public class GetJobStatusService implements GetJobStatusUseCase {
                 job.getId(),
                 job.getStatus(),
                 job.getOutputUrl(),
+                job.getAiResultPayload(),
                 job.getErrorMessage()
         ));
     }

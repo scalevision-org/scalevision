@@ -7,6 +7,13 @@ public record ProcessVideoCommand(
         String videoUrl,
         String targetAspectRatio,
         Integer targetDuration,
-        String focusArea
+        String focusArea,
+        String callbackUrl,
+        String webhookSecret,
+        String trackingMode,
+        Double referenceTimestamp,
+        Double[] referenceBox,
+        Integer fpsSampled,
+        Boolean includeTrajectoryData
 ) {
 }

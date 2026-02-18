@@ -23,7 +23,7 @@ public class JobStatusController {
         this.getJobStatusUseCase = getJobStatusUseCase;
     }
 
-    @GetMapping("/jobs/{jobId}")
+    @GetMapping({"/jobs/{jobId}", "/svmvp/jobs/{jobId}"})
     public ResponseEntity<JobStatusResponse> getJobStatus(@PathVariable UUID jobId) {
         JobStatusResult result = getJobStatusUseCase.getJobStatus(jobId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "job not found"));
@@ -33,7 +33,7 @@ public class JobStatusController {
         JobStatusResponse.ErrorData responseError = null;
 
         if (result.status() == JobStatus.COMPLETED) {
-            responseResult = new JobStatusResponse.ResultData(result.outputUrl());
+            responseResult = new JobStatusResponse.ResultData(result.outputUrl(), result.aiResultPayload());
         }
 
         if (result.status() == JobStatus.FAILED) {

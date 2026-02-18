@@ -11,6 +11,7 @@ public record JobStatusResult(
         UUID jobId,
         JobStatus status,
         String outputUrl,
+        String aiResultPayload,
         String errorMessage
 ) {
 }

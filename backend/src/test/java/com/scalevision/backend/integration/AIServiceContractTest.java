@@ -6,6 +6,10 @@ import com.scalevision.backend.application.exception.VideoProcessingException;
 import com.scalevision.backend.application.port.out.JobRepository;
 import com.scalevision.backend.application.port.out.dto.AIProcessingRequest;
 import com.scalevision.backend.application.port.out.dto.AIProcessingResponse;
+import com.scalevision.backend.application.port.out.dto.AIScanSubjectsRequest;
+import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
+import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
+import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
 import com.scalevision.backend.domain.model.JobStatus;
 import com.scalevision.backend.domain.model.ProcessingJob;
 import com.scalevision.backend.infrastructure.adapter.in.rest.CallbackController;
@@ -72,11 +76,19 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-                "center"
+                "center",
+                "http://localhost:8080/svmvp/callbacks/ai",
+                "sv_secret",
+                "auto",
+                null,
+                null,
+                30,
+                false
         ));
 
         assertEquals("ai-001", response.aiTaskId());
         assertEquals("accepted", response.status());
+        assertEquals(45, response.estimatedProcessingTimeSec());
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertEquals("/svmvp/ai/process-video", request.getPath());
@@ -95,7 +107,14 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-                "center"
+                "center",
+                "http://localhost:8080/svmvp/callbacks/ai",
+                "sv_secret",
+                "auto",
+                null,
+                null,
+                30,
+                false
         )));
     }
 
@@ -108,7 +127,14 @@ class AIServiceContractTest {
                 "invalid-url",
                 "9:16",
                 30,
-                "center"
+                "center",
+                "http://localhost:8080/svmvp/callbacks/ai",
+                "sv_secret",
+                "auto",
+                null,
+                null,
+                30,
+                false
         )));
     }
 
@@ -124,7 +150,14 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-                "center"
+                "center",
+                "http://localhost:8080/svmvp/callbacks/ai",
+                "sv_secret",
+                "auto",
+                null,
+                null,
+                30,
+                false
         )));
 
         assertTrue(ex.getMessage().contains("timeout") || ex.getMessage().contains("AI service"));
@@ -137,7 +170,7 @@ class AIServiceContractTest {
         repository.save(job);
 
         MockMvc mockMvc = MockMvcBuilders
-                .standaloneSetup(new CallbackController(repository))
+                .standaloneSetup(new CallbackController(repository, "1.0.0"))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -151,6 +184,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Webhook-Secret", job.getWebhookSecret())
+                        .header("X-AI-Schema-Version", "1.0.0")
                         .content(callback))
                 .andExpect(status().isOk());
     }
@@ -162,7 +197,7 @@ class AIServiceContractTest {
         repository.save(job);
 
         MockMvc mockMvc = MockMvcBuilders
-                .standaloneSetup(new CallbackController(repository))
+                .standaloneSetup(new CallbackController(repository, "1.0.0"))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -176,6 +211,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Webhook-Secret", job.getWebhookSecret())
+                        .header("X-AI-Schema-Version", "1.0.0")
                         .content(callback))
                 .andExpect(status().isOk());
     }
@@ -184,7 +221,7 @@ class AIServiceContractTest {
     void shouldReturn404ForUnknownJobInCallback() throws Exception {
         InMemoryJobRepository repository = new InMemoryJobRepository();
         MockMvc mockMvc = MockMvcBuilders
-                .standaloneSetup(new CallbackController(repository))
+                .standaloneSetup(new CallbackController(repository, "1.0.0"))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -197,6 +234,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Webhook-Secret", "sv_x")
+                        .header("X-AI-Schema-Version", "1.0.0")
                         .content(callback))
                 .andExpect(status().isNotFound());
     }
@@ -205,7 +244,7 @@ class AIServiceContractTest {
     void shouldReturn400ForInvalidCallbackPayload() throws Exception {
         InMemoryJobRepository repository = new InMemoryJobRepository();
         MockMvc mockMvc = MockMvcBuilders
-                .standaloneSetup(new CallbackController(repository))
+                .standaloneSetup(new CallbackController(repository, "1.0.0"))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -218,6 +257,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Webhook-Secret", "sv_x")
+                        .header("X-AI-Schema-Version", "1.0.0")
                         .content(callback))
                 .andExpect(status().isBadRequest());
     }
@@ -230,6 +271,7 @@ class AIServiceContractTest {
                 30,
                 "center"
         );
+        job.setWebhookSecret("sv_secret");
         job.updateStatus(JobStatus.PROCESSING);
         return job;
     }

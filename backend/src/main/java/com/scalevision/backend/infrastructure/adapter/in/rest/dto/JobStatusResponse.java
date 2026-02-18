@@ -10,7 +10,8 @@ public record JobStatusResponse(
         ErrorData error
 ) {
     public record ResultData(
-            String outputVideoUrl
+            String outputVideoUrl,
+            String aiResultPayload
     ) {
     }
 
