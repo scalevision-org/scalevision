@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",         
+    "noEmit": true,             
+    "target": "ESNext",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@app/*": ["src/app/*"]
+    }
+  }
+}
