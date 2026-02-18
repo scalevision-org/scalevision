@@ -19,7 +19,11 @@ public class VideoController {
         this.processVideoUseCase = processVideoUseCase;
     }
 
+<<<<<<< HEAD
     @PostMapping("/videos/process")
+=======
+    @PostMapping({"/videos/process", "/svmvp/videos/process"})
+>>>>>>> origin/feature/backend-contract-alignment-v2
     public ResponseEntity<ProcessVideoResponse> processVideo(@Valid @RequestBody ProcessVideoRequest request) {
         ProcessVideoResult result = processVideoUseCase.processVideo(request.toCommand());
         ProcessVideoResponse response = new ProcessVideoResponse(result.jobId(), result.status().name());

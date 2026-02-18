@@ -14,7 +14,13 @@ public class ProcessingJob {
     private final String focusArea;
     private JobStatus status;
     private String aiTaskId;
+<<<<<<< HEAD
     private String outputUrl;
+=======
+    private String webhookSecret;
+    private String outputUrl;
+    private String aiResultPayload;
+>>>>>>> origin/feature/backend-contract-alignment-v2
     private String errorMessage;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -107,6 +113,27 @@ public class ProcessingJob {
         this.updatedAt = LocalDateTime.now();
     }
 
+<<<<<<< HEAD
+=======
+    public String getWebhookSecret() {
+        return webhookSecret;
+    }
+
+    public void setWebhookSecret(String webhookSecret) {
+        this.webhookSecret = webhookSecret;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getAiResultPayload() {
+        return aiResultPayload;
+    }
+
+    public void setAiResultPayload(String aiResultPayload) {
+        this.aiResultPayload = aiResultPayload;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+>>>>>>> origin/feature/backend-contract-alignment-v2
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -119,7 +146,13 @@ public class ProcessingJob {
     public void applyPersistenceState(
             JobStatus persistedStatus,
             String persistedAiTaskId,
+<<<<<<< HEAD
             String persistedOutputUrl,
+=======
+            String persistedWebhookSecret,
+            String persistedOutputUrl,
+            String persistedAiResultPayload,
+>>>>>>> origin/feature/backend-contract-alignment-v2
             String persistedErrorMessage
     ) {
         if (persistedStatus != null && persistedStatus != JobStatus.PENDING) {
@@ -134,7 +167,13 @@ public class ProcessingJob {
         }
 
         this.aiTaskId = persistedAiTaskId;
+<<<<<<< HEAD
         this.outputUrl = persistedOutputUrl;
+=======
+        this.webhookSecret = persistedWebhookSecret;
+        this.outputUrl = persistedOutputUrl;
+        this.aiResultPayload = persistedAiResultPayload;
+>>>>>>> origin/feature/backend-contract-alignment-v2
         this.errorMessage = persistedErrorMessage;
     }
 

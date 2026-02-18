@@ -15,7 +15,13 @@ public class JobMapper {
         entity.setFocusArea(job.getFocusArea());
         entity.setStatus(job.getStatus());
         entity.setAiTaskId(job.getAiTaskId());
+<<<<<<< HEAD
         entity.setOutputUrl(job.getOutputUrl());
+=======
+        entity.setWebhookSecret(job.getWebhookSecret());
+        entity.setOutputUrl(job.getOutputUrl());
+        entity.setAiResultPayload(job.getAiResultPayload());
+>>>>>>> origin/feature/backend-contract-alignment-v2
         entity.setErrorMessage(job.getErrorMessage());
         entity.setCreatedAt(job.getCreatedAt());
         entity.setUpdatedAt(job.getUpdatedAt());
@@ -34,7 +40,13 @@ public class JobMapper {
         job.applyPersistenceState(
                 entity.getStatus(),
                 entity.getAiTaskId(),
+<<<<<<< HEAD
                 entity.getOutputUrl(),
+=======
+                entity.getWebhookSecret(),
+                entity.getOutputUrl(),
+                entity.getAiResultPayload(),
+>>>>>>> origin/feature/backend-contract-alignment-v2
                 entity.getErrorMessage()
         );
 

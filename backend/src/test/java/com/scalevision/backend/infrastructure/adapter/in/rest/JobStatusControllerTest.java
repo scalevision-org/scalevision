@@ -32,7 +32,11 @@ class JobStatusControllerTest {
     void shouldReturnProcessingStatus() throws Exception {
         UUID jobId = UUID.randomUUID();
         when(getJobStatusUseCase.getJobStatus(jobId))
+<<<<<<< HEAD
                 .thenReturn(Optional.of(new JobStatusResult(jobId, JobStatus.PROCESSING, null, null)));
+=======
+                .thenReturn(Optional.of(new JobStatusResult(jobId, JobStatus.PROCESSING, null, null, null)));
+>>>>>>> origin/feature/backend-contract-alignment-v2
 
         mockMvc.perform(get("/jobs/{jobId}", jobId))
                 .andExpect(status().isOk())
@@ -48,13 +52,22 @@ class JobStatusControllerTest {
                         jobId,
                         JobStatus.COMPLETED,
                         "https://cdn.test/output.mp4",
+<<<<<<< HEAD
+=======
+                        "{\"crop_recommendations\":[]}",
+>>>>>>> origin/feature/backend-contract-alignment-v2
                         null
                 )));
 
         mockMvc.perform(get("/jobs/{jobId}", jobId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
+<<<<<<< HEAD
                 .andExpect(jsonPath("$.result.outputVideoUrl").value("https://cdn.test/output.mp4"));
+=======
+                .andExpect(jsonPath("$.result.outputVideoUrl").value("https://cdn.test/output.mp4"))
+                .andExpect(jsonPath("$.result.aiResultPayload").value("{\"crop_recommendations\":[]}"));
+>>>>>>> origin/feature/backend-contract-alignment-v2
     }
 
     @Test
@@ -65,6 +78,10 @@ class JobStatusControllerTest {
                         jobId,
                         JobStatus.FAILED,
                         null,
+<<<<<<< HEAD
+=======
+                        null,
+>>>>>>> origin/feature/backend-contract-alignment-v2
                         "MODEL_TIMEOUT"
                 )));
 

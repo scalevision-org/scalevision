@@ -19,6 +19,10 @@ public class ProcessVideoService implements ProcessVideoUseCase {
 
     private final JobRepository jobRepository;
     private final AIServicePort aiServicePort;
+<<<<<<< HEAD
+=======
+    private static final String DEFAULT_CALLBACK_URL = "http://localhost:8080/svmvp/callbacks/ai";
+>>>>>>> origin/feature/backend-contract-alignment-v2
 
     public ProcessVideoService(JobRepository jobRepository, AIServicePort aiServicePort) {
         this.jobRepository = jobRepository;
@@ -36,6 +40,11 @@ public class ProcessVideoService implements ProcessVideoUseCase {
                 command.targetDuration(),
                 command.focusArea()
         );
+<<<<<<< HEAD
+=======
+        String webhookSecret = resolveWebhookSecret(command.webhookSecret());
+        job.setWebhookSecret(webhookSecret);
+>>>>>>> origin/feature/backend-contract-alignment-v2
 
         jobRepository.save(job);
 
@@ -45,7 +54,18 @@ public class ProcessVideoService implements ProcessVideoUseCase {
                     job.getVideoUrl(),
                     job.getTargetAspectRatio(),
                     job.getTargetDuration(),
+<<<<<<< HEAD
                     job.getFocusArea()
+=======
+                    job.getFocusArea(),
+                    resolveCallbackUrl(command.callbackUrl()),
+                    webhookSecret,
+                    command.trackingMode(),
+                    command.referenceTimestamp(),
+                    command.referenceBox(),
+                    command.fpsSampled(),
+                    command.includeTrajectoryData()
+>>>>>>> origin/feature/backend-contract-alignment-v2
             );
 
             AIProcessingResponse response = aiServicePort.processVideo(request);
@@ -78,4 +98,21 @@ public class ProcessVideoService implements ProcessVideoUseCase {
             throw new VideoProcessingException("videoUrl is invalid");
         }
     }
+<<<<<<< HEAD
+=======
+
+    private String resolveWebhookSecret(String rawSecret) {
+        if (rawSecret != null && !rawSecret.isBlank()) {
+            return rawSecret;
+        }
+        return "sv_" + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private String resolveCallbackUrl(String callbackUrl) {
+        if (callbackUrl == null || callbackUrl.isBlank()) {
+            return DEFAULT_CALLBACK_URL;
+        }
+        return callbackUrl;
+    }
+>>>>>>> origin/feature/backend-contract-alignment-v2
 }
