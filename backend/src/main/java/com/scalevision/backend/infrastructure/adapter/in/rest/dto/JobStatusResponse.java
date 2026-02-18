@@ -10,7 +10,12 @@ public record JobStatusResponse(
         ErrorData error
 ) {
     public record ResultData(
+<<<<<<< HEAD
             String outputVideoUrl
+=======
+            String outputVideoUrl,
+            String aiResultPayload
+>>>>>>> origin/feature/backend-contract-alignment-v2
     ) {
     }
 

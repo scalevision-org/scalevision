@@ -23,7 +23,11 @@ public class JobStatusController {
         this.getJobStatusUseCase = getJobStatusUseCase;
     }
 
+<<<<<<< HEAD
     @GetMapping("/jobs/{jobId}")
+=======
+    @GetMapping({"/jobs/{jobId}", "/svmvp/jobs/{jobId}"})
+>>>>>>> origin/feature/backend-contract-alignment-v2
     public ResponseEntity<JobStatusResponse> getJobStatus(@PathVariable UUID jobId) {
         JobStatusResult result = getJobStatusUseCase.getJobStatus(jobId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "job not found"));
@@ -33,7 +37,11 @@ public class JobStatusController {
         JobStatusResponse.ErrorData responseError = null;
 
         if (result.status() == JobStatus.COMPLETED) {
+<<<<<<< HEAD
             responseResult = new JobStatusResponse.ResultData(result.outputUrl());
+=======
+            responseResult = new JobStatusResponse.ResultData(result.outputUrl(), result.aiResultPayload());
+>>>>>>> origin/feature/backend-contract-alignment-v2
         }
 
         if (result.status() == JobStatus.FAILED) {
