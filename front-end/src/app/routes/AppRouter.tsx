@@ -6,9 +6,50 @@ import { PricingPage } from "@/modules/landing/pages/PricingPage"
 import { FeaturesPage } from "@/modules/landing/pages/FeaturesPage"
 import UploadPage from "@/modules/upload/pages/UploadPage"
 import { ConfigurationPage } from "@/modules/configuration/pages/ConfigurationPage";
-import { Config } from "@/modules/configuration/pages/Config";
+import { PreviewPage } from "@/modules/Preview/pages";
+import { DetectedFaceWithVideo } from "@/domain/types/face.types";
 
 export function AppRouter() {
+  // Datos de ejemplo: cada cara con su respectivo video
+   const detectedFaces: DetectedFaceWithVideo[] = [
+     {
+       id: '1',
+       label: 'Orange Cat',
+       imageUrl: 'https://n9.cl/uo31l7',
+       videoUrl: 'https://www.youtube.com/shorts/cu0QGh2w72k',
+       scale: 2.5,
+       origin: 'center',
+     },
+     {
+       id: '2',
+       label: 'Black Cat',
+       imageUrl: 'https://n9.cl/7dfnf',
+       videoUrl: 'https://www.youtube.com/shorts/b8vKTrzKwg4',
+       scale: 2.8,
+       origin: 'top-left',
+     },
+     {
+       id: '3',
+       label: 'White Cat',
+       imageUrl: 'https://n9.cl/brvld',
+       videoUrl: 'https://www.youtube.com/shorts/pnmkeJc9c1c',
+       scale: 2.2,
+       origin: 'bottom-right',
+     },
+   ];
+
+  // Datos de ejemplo: una sola cara con su respectivo video
+ // const detectedFacesSingle: DetectedFaceWithVideo[] = [
+ //   {
+ //     id: '1',
+ //     label: 'Orange Cat',
+ //     imageUrl: 'https://n9.cl/uo31l7',
+ //     videoUrl: 'https://www.youtube.com/shorts/cu0QGh2w72k',
+ //     scale: 2.5,
+ //     origin: 'center',
+ //   },
+ // ];
+
   return (
     <BrowserRouter>
       <Routes>
@@ -18,8 +59,10 @@ export function AppRouter() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/configuration" element={<ConfigurationPage />} />
-          <Route path="/config" element={<Config />} />
-          
+          <Route path="/preview" element={<PreviewPage 
+          detectedFaces={detectedFaces}
+          onSelectFace={(faceId) => console.log('Selected face:', faceId)}
+        />} />
         </Route>
       </Routes>
     </BrowserRouter>
