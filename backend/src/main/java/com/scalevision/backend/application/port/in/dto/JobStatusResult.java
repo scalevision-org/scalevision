@@ -11,10 +11,7 @@ public record JobStatusResult(
         UUID jobId,
         JobStatus status,
         String outputUrl,
-<<<<<<< HEAD
-=======
         String aiResultPayload,
->>>>>>> origin/feature/backend-contract-alignment-v2
         String errorMessage
 ) {
 }

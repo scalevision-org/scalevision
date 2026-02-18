@@ -11,13 +11,6 @@ public record AICallbackRequest(
         @NotBlank(message = "status is required")
         String status,
 
-<<<<<<< HEAD
-        @JsonAlias("output_url")
-        String outputUrl,
-
-        @JsonAlias("error_message")
-        String errorMessage
-=======
         @JsonAlias({"job_result_url", "output_url"})
         String outputUrl,
 
@@ -31,6 +24,5 @@ public record AICallbackRequest(
 
         @JsonAlias("crop_recommendations")
         Object cropRecommendations
->>>>>>> origin/feature/backend-contract-alignment-v2
 ) {
 }

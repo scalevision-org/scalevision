@@ -31,10 +31,7 @@ public class GetJobStatusService implements GetJobStatusUseCase {
                 job.getId(),
                 job.getStatus(),
                 job.getOutputUrl(),
-<<<<<<< HEAD
-=======
                 job.getAiResultPayload(),
->>>>>>> origin/feature/backend-contract-alignment-v2
                 job.getErrorMessage()
         ));
     }

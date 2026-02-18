@@ -6,14 +6,11 @@ import com.scalevision.backend.application.exception.VideoProcessingException;
 import com.scalevision.backend.application.port.out.AIServicePort;
 import com.scalevision.backend.application.port.out.dto.AIProcessingRequest;
 import com.scalevision.backend.application.port.out.dto.AIProcessingResponse;
-<<<<<<< HEAD
-=======
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsRequest;
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
 import com.scalevision.backend.application.port.out.dto.AISubjectCandidate;
 import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
->>>>>>> origin/feature/backend-contract-alignment-v2
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,10 +23,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-<<<<<<< HEAD
-=======
 import java.util.List;
->>>>>>> origin/feature/backend-contract-alignment-v2
 import java.util.Map;
 
 @Component
@@ -60,11 +54,6 @@ public class AIServiceHttpAdapter implements AIServicePort {
         Map<String, Object> payload = new HashMap<>();
         payload.put("job_id", request.jobId());
         payload.put("video_url", request.videoUrl());
-<<<<<<< HEAD
-        payload.put("target_aspect_ratio", request.targetAspectRatio());
-        payload.put("target_duration", request.targetDuration());
-        payload.put("focus_area", request.focusArea());
-=======
         payload.put("callback_url", request.callbackUrl());
         payload.put("webhook_secret", request.webhookSecret());
         payload.put("tracking_mode", resolveTrackingMode(request.trackingMode()));
@@ -81,7 +70,6 @@ public class AIServiceHttpAdapter implements AIServicePort {
         config.put("fps_sampled", request.fpsSampled());
         config.put("include_trajectory_data", request.includeTrajectoryData());
         payload.put("config", config);
->>>>>>> origin/feature/backend-contract-alignment-v2
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -96,14 +84,9 @@ public class AIServiceHttpAdapter implements AIServicePort {
             JsonNode body = objectMapper.readTree(response.getBody());
             String aiTaskId = readText(body, "ai_task_id", "job_id");
             String status = readText(body, "status", "accepted");
-<<<<<<< HEAD
-
-            return new AIProcessingResponse(aiTaskId, status);
-=======
             int estimatedTime = readInt(body, "estimated_processing_time_sec", 45);
 
             return new AIProcessingResponse(aiTaskId, status, estimatedTime);
->>>>>>> origin/feature/backend-contract-alignment-v2
         } catch (HttpStatusCodeException ex) {
             throw new VideoProcessingException("AI service error: HTTP " + ex.getStatusCode().value(), ex);
         } catch (ResourceAccessException ex) {
@@ -113,8 +96,6 @@ public class AIServiceHttpAdapter implements AIServicePort {
         }
     }
 
-<<<<<<< HEAD
-=======
     @Override
     public AIScanSubjectsResponse scanSubjects(AIScanSubjectsRequest request) {
         Map<String, Object> payload = new HashMap<>();
@@ -182,7 +163,6 @@ public class AIServiceHttpAdapter implements AIServicePort {
         }
     }
 
->>>>>>> origin/feature/backend-contract-alignment-v2
     private String readText(JsonNode node, String key, String fallback) {
         JsonNode value = node.get(key);
         if (value == null || value.isNull() || value.asText().isBlank()) {
@@ -190,8 +170,6 @@ public class AIServiceHttpAdapter implements AIServicePort {
         }
         return value.asText();
     }
-<<<<<<< HEAD
-=======
 
     private int readInt(JsonNode node, String key, int fallback) {
         JsonNode value = node.get(key);
@@ -260,5 +238,4 @@ public class AIServiceHttpAdapter implements AIServicePort {
         }
         return null;
     }
->>>>>>> origin/feature/backend-contract-alignment-v2
 }
