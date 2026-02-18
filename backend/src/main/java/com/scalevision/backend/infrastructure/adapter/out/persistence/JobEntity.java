@@ -47,11 +47,6 @@ public class JobEntity {
     @Column(name = "ai_task_id", length = 255)
     private String aiTaskId;
 
-<<<<<<< HEAD
-    @Column(name = "output_url", length = 500)
-    private String outputUrl;
-
-=======
     @Column(name = "webhook_secret", length = 255)
     private String webhookSecret;
 
@@ -61,7 +56,6 @@ public class JobEntity {
     @Column(name = "ai_result_payload", length = 8000)
     private String aiResultPayload;
 
->>>>>>> origin/feature/backend-contract-alignment-v2
     @Column(name = "error_message", length = 2000)
     private String errorMessage;
 
@@ -154,8 +148,6 @@ public class JobEntity {
         this.outputUrl = outputUrl;
     }
 
-<<<<<<< HEAD
-=======
     public String getWebhookSecret() {
         return webhookSecret;
     }
@@ -172,7 +164,6 @@ public class JobEntity {
         this.aiResultPayload = aiResultPayload;
     }
 
->>>>>>> origin/feature/backend-contract-alignment-v2
     public String getErrorMessage() {
         return errorMessage;
     }

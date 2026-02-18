@@ -46,11 +46,8 @@ class CallbackControllerTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", job.getWebhookSecret())
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jobId").value(job.getId().toString()))
@@ -73,11 +70,8 @@ class CallbackControllerTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", job.getWebhookSecret())
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAILED"));
@@ -97,11 +91,8 @@ class CallbackControllerTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", "sv_x")
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(request))
                 .andExpect(status().isNotFound());
     }
@@ -127,17 +118,12 @@ class CallbackControllerTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", "sv_x")
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(request))
                 .andExpect(status().isConflict());
     }
 
-<<<<<<< HEAD
-=======
     @Test
     void shouldReturn401WhenWebhookSecretDoesNotMatch() throws Exception {
         ProcessingJob job = processingJobInProgress();
@@ -158,7 +144,6 @@ class CallbackControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
->>>>>>> origin/feature/backend-contract-alignment-v2
     private ProcessingJob processingJobInProgress() {
         ProcessingJob job = new ProcessingJob(
                 UUID.randomUUID(),
@@ -167,10 +152,7 @@ class CallbackControllerTest {
                 30,
                 "center"
         );
-<<<<<<< HEAD
-=======
         job.setWebhookSecret("sv_secret");
->>>>>>> origin/feature/backend-contract-alignment-v2
         job.updateStatus(JobStatus.PROCESSING);
         return job;
     }

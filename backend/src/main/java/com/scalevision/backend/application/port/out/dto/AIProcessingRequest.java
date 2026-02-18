@@ -8,9 +8,6 @@ public record AIProcessingRequest(
         String videoUrl,
         String targetAspectRatio,
         Integer targetDuration,
-<<<<<<< HEAD
-        String focusArea
-=======
         String focusArea,
         String callbackUrl,
         String webhookSecret,
@@ -19,6 +16,5 @@ public record AIProcessingRequest(
         Double[] referenceBox,
         Integer fpsSampled,
         Boolean includeTrajectoryData
->>>>>>> origin/feature/backend-contract-alignment-v2
 ) {
 }

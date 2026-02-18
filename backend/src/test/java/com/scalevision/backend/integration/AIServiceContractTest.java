@@ -6,13 +6,10 @@ import com.scalevision.backend.application.exception.VideoProcessingException;
 import com.scalevision.backend.application.port.out.JobRepository;
 import com.scalevision.backend.application.port.out.dto.AIProcessingRequest;
 import com.scalevision.backend.application.port.out.dto.AIProcessingResponse;
-<<<<<<< HEAD
-=======
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsRequest;
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
->>>>>>> origin/feature/backend-contract-alignment-v2
 import com.scalevision.backend.domain.model.JobStatus;
 import com.scalevision.backend.domain.model.ProcessingJob;
 import com.scalevision.backend.infrastructure.adapter.in.rest.CallbackController;
@@ -79,9 +76,6 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 "http://localhost:8080/svmvp/callbacks/ai",
                 "sv_secret",
@@ -90,15 +84,11 @@ class AIServiceContractTest {
                 null,
                 30,
                 false
->>>>>>> origin/feature/backend-contract-alignment-v2
         ));
 
         assertEquals("ai-001", response.aiTaskId());
         assertEquals("accepted", response.status());
-<<<<<<< HEAD
-=======
         assertEquals(45, response.estimatedProcessingTimeSec());
->>>>>>> origin/feature/backend-contract-alignment-v2
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertEquals("/svmvp/ai/process-video", request.getPath());
@@ -117,9 +107,6 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 "http://localhost:8080/svmvp/callbacks/ai",
                 "sv_secret",
@@ -128,7 +115,6 @@ class AIServiceContractTest {
                 null,
                 30,
                 false
->>>>>>> origin/feature/backend-contract-alignment-v2
         )));
     }
 
@@ -141,9 +127,6 @@ class AIServiceContractTest {
                 "invalid-url",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 "http://localhost:8080/svmvp/callbacks/ai",
                 "sv_secret",
@@ -152,7 +135,6 @@ class AIServiceContractTest {
                 null,
                 30,
                 false
->>>>>>> origin/feature/backend-contract-alignment-v2
         )));
     }
 
@@ -168,9 +150,6 @@ class AIServiceContractTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 "http://localhost:8080/svmvp/callbacks/ai",
                 "sv_secret",
@@ -179,7 +158,6 @@ class AIServiceContractTest {
                 null,
                 30,
                 false
->>>>>>> origin/feature/backend-contract-alignment-v2
         )));
 
         assertTrue(ex.getMessage().contains("timeout") || ex.getMessage().contains("AI service"));
@@ -192,11 +170,7 @@ class AIServiceContractTest {
         repository.save(job);
 
         MockMvc mockMvc = MockMvcBuilders
-<<<<<<< HEAD
-                .standaloneSetup(new CallbackController(repository))
-=======
                 .standaloneSetup(new CallbackController(repository, "1.0.0"))
->>>>>>> origin/feature/backend-contract-alignment-v2
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -210,11 +184,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", job.getWebhookSecret())
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(callback))
                 .andExpect(status().isOk());
     }
@@ -226,11 +197,7 @@ class AIServiceContractTest {
         repository.save(job);
 
         MockMvc mockMvc = MockMvcBuilders
-<<<<<<< HEAD
-                .standaloneSetup(new CallbackController(repository))
-=======
                 .standaloneSetup(new CallbackController(repository, "1.0.0"))
->>>>>>> origin/feature/backend-contract-alignment-v2
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -244,11 +211,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", job.getWebhookSecret())
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(callback))
                 .andExpect(status().isOk());
     }
@@ -257,11 +221,7 @@ class AIServiceContractTest {
     void shouldReturn404ForUnknownJobInCallback() throws Exception {
         InMemoryJobRepository repository = new InMemoryJobRepository();
         MockMvc mockMvc = MockMvcBuilders
-<<<<<<< HEAD
-                .standaloneSetup(new CallbackController(repository))
-=======
                 .standaloneSetup(new CallbackController(repository, "1.0.0"))
->>>>>>> origin/feature/backend-contract-alignment-v2
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -274,11 +234,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", "sv_x")
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(callback))
                 .andExpect(status().isNotFound());
     }
@@ -287,11 +244,7 @@ class AIServiceContractTest {
     void shouldReturn400ForInvalidCallbackPayload() throws Exception {
         InMemoryJobRepository repository = new InMemoryJobRepository();
         MockMvc mockMvc = MockMvcBuilders
-<<<<<<< HEAD
-                .standaloneSetup(new CallbackController(repository))
-=======
                 .standaloneSetup(new CallbackController(repository, "1.0.0"))
->>>>>>> origin/feature/backend-contract-alignment-v2
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
@@ -304,11 +257,8 @@ class AIServiceContractTest {
 
         mockMvc.perform(post("/callbacks/ai")
                         .contentType(MediaType.APPLICATION_JSON)
-<<<<<<< HEAD
-=======
                         .header("X-Webhook-Secret", "sv_x")
                         .header("X-AI-Schema-Version", "1.0.0")
->>>>>>> origin/feature/backend-contract-alignment-v2
                         .content(callback))
                 .andExpect(status().isBadRequest());
     }
@@ -321,10 +271,7 @@ class AIServiceContractTest {
                 30,
                 "center"
         );
-<<<<<<< HEAD
-=======
         job.setWebhookSecret("sv_secret");
->>>>>>> origin/feature/backend-contract-alignment-v2
         job.updateStatus(JobStatus.PROCESSING);
         return job;
     }

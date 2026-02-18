@@ -7,13 +7,10 @@ import com.scalevision.backend.application.port.out.AIServicePort;
 import com.scalevision.backend.application.port.out.JobRepository;
 import com.scalevision.backend.application.port.out.dto.AIProcessingRequest;
 import com.scalevision.backend.application.port.out.dto.AIProcessingResponse;
-<<<<<<< HEAD
-=======
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsRequest;
 import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
->>>>>>> origin/feature/backend-contract-alignment-v2
 import com.scalevision.backend.domain.model.JobStatus;
 import com.scalevision.backend.domain.model.ProcessingJob;
 import org.junit.jupiter.api.Test;
@@ -67,9 +64,6 @@ class ProcessVideoServiceTest {
                 "ftp://video.mp4",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 null,
                 null,
@@ -78,7 +72,6 @@ class ProcessVideoServiceTest {
                 null,
                 null,
                 null
->>>>>>> origin/feature/backend-contract-alignment-v2
         );
 
         assertThrows(VideoProcessingException.class, () -> service.processVideo(command));
@@ -90,9 +83,6 @@ class ProcessVideoServiceTest {
                 "https://cdn.test/video.mp4",
                 "9:16",
                 30,
-<<<<<<< HEAD
-                "center"
-=======
                 "center",
                 null,
                 null,
@@ -101,7 +91,6 @@ class ProcessVideoServiceTest {
                 null,
                 null,
                 null
->>>>>>> origin/feature/backend-contract-alignment-v2
         );
     }
 
@@ -143,13 +132,9 @@ class ProcessVideoServiceTest {
             }
 
             copy.setAiTaskId(source.getAiTaskId());
-<<<<<<< HEAD
-            copy.setOutputUrl(source.getOutputUrl());
-=======
             copy.setWebhookSecret(source.getWebhookSecret());
             copy.setOutputUrl(source.getOutputUrl());
             copy.setAiResultPayload(source.getAiResultPayload());
->>>>>>> origin/feature/backend-contract-alignment-v2
             copy.setErrorMessage(source.getErrorMessage());
 
             return copy;
@@ -169,9 +154,6 @@ class ProcessVideoServiceTest {
             if (shouldThrow) {
                 throw new RuntimeException("timeout from AI");
             }
-<<<<<<< HEAD
-            return new AIProcessingResponse("ai-task-001", "accepted");
-=======
             return new AIProcessingResponse("ai-task-001", "accepted", 45);
         }
 
@@ -188,7 +170,6 @@ class ProcessVideoServiceTest {
         @Override
         public AIWorkerHealthResponse getHealth() {
             throw new UnsupportedOperationException();
->>>>>>> origin/feature/backend-contract-alignment-v2
         }
     }
 }

@@ -1,25 +1,13 @@
 package com.scalevision.backend.infrastructure.adapter.in.rest.dto;
 
 import com.scalevision.backend.application.port.in.dto.ProcessVideoCommand;
-<<<<<<< HEAD
-=======
 import com.fasterxml.jackson.annotation.JsonAlias;
->>>>>>> origin/feature/backend-contract-alignment-v2
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record ProcessVideoRequest(
         @NotBlank(message = "videoUrl is required")
         @Pattern(regexp = "^https?://.*", message = "videoUrl must start with http:// or https://")
-<<<<<<< HEAD
-        String videoUrl,
-        String targetAspectRatio,
-        Integer targetDuration,
-        String focusArea
-) {
-    public ProcessVideoCommand toCommand() {
-        return new ProcessVideoCommand(videoUrl, targetAspectRatio, targetDuration, focusArea);
-=======
         @JsonAlias("video_url")
         String videoUrl,
         @JsonAlias("target_aspect_ratio")
@@ -90,6 +78,5 @@ public record ProcessVideoRequest(
                 fpsSampled,
                 includeTrajectoryData
         );
->>>>>>> origin/feature/backend-contract-alignment-v2
     }
 }

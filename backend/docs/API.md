@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-# API Backend MVP
-
-Base URL backend local:
-
-- `http://localhost:8080`
-
-## 1) Crear procesamiento
-
-Endpoint:
-
-- `POST /videos/process`
-=======
 # API Contract (Backend MVP + Spec v2)
 
 Base URL oficial backend:
@@ -26,28 +13,11 @@ Compatibilidad temporal:
 Endpoint:
 
 - `POST /ai/scan-subjects`
->>>>>>> origin/feature/backend-contract-alignment-v2
 
 Request:
 
 ```json
 {
-<<<<<<< HEAD
-  "videoUrl": "https://example.com/video.mp4",
-  "targetAspectRatio": "9:16",
-  "targetDuration": 30,
-  "focusArea": "speaker"
-}
-```
-
-Respuesta exitosa:
-
-- Status: `202 Accepted`
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-=======
   "video_url": "https://objectstorage.../video.mp4?par=...",
   "min_appearance_ratio": 0.8,
   "config": {
@@ -118,44 +88,21 @@ Response `202`:
 ```json
 {
   "jobId": "uuid",
->>>>>>> origin/feature/backend-contract-alignment-v2
   "status": "PROCESSING"
 }
 ```
 
-<<<<<<< HEAD
-Errores comunes:
-
-- `400 Bad Request` si `videoUrl` es inválido o falta.
-
-## 2) Consultar estado (Polling)
-=======
 ## 3) Polling de estado en Backend
->>>>>>> origin/feature/backend-contract-alignment-v2
 
 Endpoint:
 
 - `GET /jobs/{jobId}`
 
-<<<<<<< HEAD
-Ejemplo:
-
-- `GET /jobs/b3b3f4cf-91be-46e4-a883-ef6d496f8f4a`
-
-Respuesta en proceso:
-
-- Status: `200 OK`
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-=======
 Response `200`:
 
 ```json
 {
   "jobId": "uuid",
->>>>>>> origin/feature/backend-contract-alignment-v2
   "status": "PROCESSING",
   "progressPercentage": 50,
   "result": null,
@@ -163,90 +110,17 @@ Response `200`:
 }
 ```
 
-<<<<<<< HEAD
-Respuesta final exitosa:
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "COMPLETED",
-  "progressPercentage": 100,
-  "result": {
-    "outputVideoUrl": "https://cdn.example.com/shorts/final.mp4"
-  },
-  "error": null
-}
-```
-
-Respuesta final con error:
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "FAILED",
-  "progressPercentage": 100,
-  "result": null,
-  "error": {
-    "code": "PROCESSING_ERROR",
-    "message": "AI timeout",
-    "retryable": false
-  }
-}
-```
-
-Error por job inexistente:
-
-- `404 Not Found`
-
-## 3) Callback de IA
-=======
 Cuando termina:
 
 - `result.outputVideoUrl` (si aplica)
 - `result.aiResultPayload` (payload bruto devuelto por IA en callback)
 
 ## 4) Callback IA -> Backend (seguro)
->>>>>>> origin/feature/backend-contract-alignment-v2
 
 Endpoint:
 
 - `POST /callbacks/ai`
 
-<<<<<<< HEAD
-Request (éxito):
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "COMPLETED",
-  "outputUrl": "https://cdn.example.com/shorts/final.mp4"
-}
-```
-
-Request (fallo):
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "FAILED",
-  "errorMessage": "AI timeout"
-}
-```
-
-También soporta alias en snake_case:
-
-- `job_id`
-- `output_url`
-- `error_message`
-
-Respuesta:
-
-- Status: `200 OK`
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-=======
 Headers recomendados:
 
 - `Content-Type: application/json`
@@ -289,31 +163,10 @@ Response `200`:
 ```json
 {
   "jobId": "uuid",
->>>>>>> origin/feature/backend-contract-alignment-v2
   "status": "COMPLETED"
 }
 ```
 
-<<<<<<< HEAD
-## Polling recomendado para frontend
-
-- Frecuencia sugerida: cada `2` a `5` segundos.
-- Terminar polling cuando `status` sea `COMPLETED` o `FAILED`.
-
-## Integración con IA
-
-Base URL configurada en backend:
-
-- `ai.service.base-url` (default `http://localhost:8000/svmvp`)
-
-Endpoint consumido por backend:
-
-- `POST /ai/process-video`
-
-Ruta completa por default:
-
-- `http://localhost:8000/svmvp/ai/process-video`
-=======
 ## 5) Polling/Health proxy hacia IA
 
 Endpoints:
@@ -337,4 +190,3 @@ Llamadas que hace backend:
 - `POST /ai/process-video`
 - `GET /ai/job/{jobId}`
 - `GET /health`
->>>>>>> origin/feature/backend-contract-alignment-v2
