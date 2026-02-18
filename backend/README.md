@@ -1,148 +1,102 @@
-# ScaleVision -- Backend
+# ScaleVision Backend (MVP)
 
-Backend oficial del proyecto **ScaleVision**.
+Backend del proyecto ScaleVision para procesar videos y generar shorts verticales.
 
-Este servicio será responsable de:
+## Objetivo del backend
 
--   Exponer la API principal del sistema
--   Orquestar el flujo de procesamiento de videos
--   Comunicarse con el servicio de IA
--   Gestionar estados y persistencia de datos
+- Exponer API REST para iniciar procesamiento de video.
+- Consultar estado del trabajo con polling HTTP.
+- Recibir callback de IA cuando termina o falla.
+- Mantener el modelo de dominio con arquitectura hexagonal.
 
-Actualmente este módulo contiene la **estructura base del proyecto**
-como parte del MVP Prototype.
+## Tecnologías
 
-------------------------------------------------------------------------
+- Java 21
+- Spring Boot 3.3.5
+- Maven Wrapper
+- Spring Web
+- Spring Data JPA
+- H2 (runtime)
+- Bean Validation
+- Lombok
 
-## 🚀 Tecnologías
+## Arquitectura
 
--   Java 21
--   Spring Boot
--   Maven
--   Spring Web
--   Spring Data JPA
--   H2 Database (in-memory)
--   Polling HTTP (consulta de estado de jobs)
--   Lombok
--   Bean Validation
+Se usa arquitectura hexagonal:
 
-------------------------------------------------------------------------
+- `domain`: entidades y reglas de negocio.
+- `application`: casos de uso y puertos.
+- `infrastructure`: controladores REST y adaptadores externos.
 
-## 📦 Estructura actual
+Más detalle en:
 
-En esta primera fase se configuró:
+- `docs/ARCHITECTURE.md`
 
--   Proyecto Maven con Spring Boot
--   Dependencias necesarias
--   Maven Wrapper
--   Configuración base para compilación
--   README con instrucciones de ejecución
+## API actual (MVP)
 
-No incluye aún:
+- `POST /videos/process`: crea un job de procesamiento.
+- `GET /jobs/{jobId}`: consulta estado por polling.
+- `POST /callbacks/ai`: callback del servicio IA.
 
--   Endpoints funcionales
--   Casos de uso
--   Lógica de dominio
--   Integración con IA
+Contrato completo y ejemplos en:
 
-------------------------------------------------------------------------
+- `docs/API.md`
 
-## 🛠 Requisitos
+## Flujo de polling
 
--   Java 21 instalado
--   Git
--   Permisos de ejecución en archivos (`chmod +x mvnw` si es necesario)
+1. Frontend llama `POST /videos/process`.
+2. Backend responde `202 Accepted` con `jobId`.
+3. Frontend consulta `GET /jobs/{jobId}` cada 2-5 segundos.
+4. Servicio IA llama `POST /callbacks/ai` con `COMPLETED` o `FAILED`.
+5. Frontend sigue consultando hasta estado final.
 
-------------------------------------------------------------------------
+## Puertos de trabajo
 
-## 🔧 Compilar el proyecto
+- Backend: `http://localhost:8080`
+- IA: `http://localhost:8000/svmvp` (base URL configurable)
+- Frontend: `http://localhost:3000`
 
-Desde la carpeta `backend` ejecutar:
+## Configuración mínima
 
-``` bash
-./mvnw clean install
-```
+Archivo actual:
 
-Si todo está correcto, deberías ver:
+- `src/main/resources/application.properties`
 
-BUILD SUCCESS
+Propiedad disponible:
 
-------------------------------------------------------------------------
+- `spring.application.name=scalevision-backend`
 
-## ▶ Ejecutar la aplicación
+Propiedad opcional para IA:
 
-``` bash
+- `ai.service.base-url=http://localhost:8000/svmvp`
+
+## Ejecución local
+
+Desde `/Users/tinus/Developer/scalevision/backend`:
+
+```bash
+./mvnw clean test
 ./mvnw spring-boot:run
 ```
 
-La aplicación iniciará en:
+## Desarrollo por actividades
 
-http://localhost:8080
+- Base principal backend: `scalevision-backend`
+- Ramas de trabajo: `feature/backend-activity-N-...`
+- Flujo recomendado: feature -> PR a `scalevision-backend` -> merge -> borrar feature
 
-------------------------------------------------------------------------
+Guía práctica de trabajo en ramas y PR:
 
-## 📂 Rama de trabajo
+- `docs/DEVELOPMENT.md`
 
-Este módulo vive en:
+## Estado actual del MVP
 
-scalevision-backend
+- Dominio base implementado (`ProcessingJob`, `JobStatus`).
+- Casos de uso de iniciar proceso y consultar estado.
+- Contrato inicial IA por HTTP validado con tests de contrato.
+- Polling implementado como estrategia oficial (sin WebSocket en MVP).
 
-Las nuevas funcionalidades deberán desarrollarse en ramas `feature/*` y
-luego abrir Pull Request hacia `scalevision-backend`.
+## Equipo Backend
 
-------------------------------------------------------------------------
-
-## 🎯 Estado del proyecto
-
-Fase actual:
-
-Configuración base del backend para el MVP.
-
-Siguientes pasos:
-
--   Definición de arquitectura hexagonal
--   Creación de casos de uso
--   Definición de contratos API
--   Integración con módulo de IA
-
-------------------------------------------------------------------------
-
-## 👥 Equipo Backend
-
-Proyecto desarrollado por personal cualificado en el área de Backend
-como parte una Simulación Laboral - Febrero 2026 de **NoCountry**, con enfoque en integración real entre disciplinas y buenas prácticas de desarrollo.
-
-**Integrantes**:
-
-⚙️ **Backend Team**
-
-<table>
-  <tr>
-    <!-- Backend 1 -->
-    <td align="center" width="200">
-      <a href="https://github.com/TinusLopez">
-        <img src="https://avatars.githubusercontent.com/u/73755236?v=4" width="120" style="border-radius:50%;" />
-        <br />
-        <strong>Florentino López</strong>
-      </a>
-      <br/>
-      <sub>Backend Lead</sub>
-    </td>
-    <!-- Backend 2 -->
-    <td align="center" width="200">
-      <a href="https://github.com/edwinmancilla">
-        <img src="https://avatars.githubusercontent.com/u/196448088?v=4" width="120" style="border-radius:50%;" />
-        <br />
-        <strong>Edwin Mancilla</strong>
-      </a>
-      <br />
-      <sub>Backend Developer</sub>
-    </td>
-  </tr>
-</table>
-
-------------------------------------------------------------------------
-
-ScaleVision\
-MVP enfocado en automatización inteligente de generación de shorts
-verticales a partir de video horizontal.
+- Backend Lead: [Florentino López](https://github.com/TinusLopez)
+- Backend Dev: [Edwin Mancilla](https://github.com/edwinmancilla)
