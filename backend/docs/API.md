@@ -1,58 +1,108 @@
-# API Backend MVP
+# API Contract (Backend MVP + Spec v2)
 
-Base URL backend local:
+Base URL oficial backend:
 
-- `http://localhost:8080`
+- `http://localhost:8080/svmvp`
 
-## 1) Crear procesamiento
+Compatibilidad temporal:
+
+- También existen rutas sin prefijo `/svmvp`.
+
+## 1) Fase A - Descubrimiento de sujetos
 
 Endpoint:
 
-- `POST /videos/process`
+- `POST /ai/scan-subjects`
 
 Request:
 
 ```json
 {
-  "videoUrl": "https://example.com/video.mp4",
-  "targetAspectRatio": "9:16",
-  "targetDuration": 30,
-  "focusArea": "speaker"
+  "video_url": "https://objectstorage.../video.mp4?par=...",
+  "min_appearance_ratio": 0.8,
+  "config": {
+    "max_subjects": 3
+  }
 }
 ```
 
-Respuesta exitosa:
-
-- Status: `202 Accepted`
+Response `200`:
 
 ```json
 {
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
+  "status": "success",
+  "subjects": [
+    {
+      "tempId": "subject_01",
+      "thumbnailBase64": "data:image/jpeg;base64,...",
+      "appearanceRatio": 0.92,
+      "subjectType": "person",
+      "referenceData": {
+        "timestamp": 12.5,
+        "box": [0.4, 0.2, 0.6, 0.5]
+      }
+    }
+  ]
+}
+```
+
+## 2) Fase B - Iniciar procesamiento
+
+Endpoint:
+
+- `POST /videos/process`
+
+Request (extendido):
+
+```json
+{
+  "video_url": "https://objectstorage.../video.mp4?par=...",
+  "callback_url": "https://api.backend.com/svmvp/callbacks/ai",
+  "webhook_secret": "sv_secret_job_scoped",
+  "tracking_mode": "user_selected",
+  "target_selection": {
+    "reference_timestamp": 12.5,
+    "reference_box": [0.4, 0.2, 0.6, 0.5]
+  },
+  "config": {
+    "target_aspect_ratio": "9:16",
+    "fps_sampled": 30,
+    "include_trajectory_data": false
+  }
+}
+```
+
+Request simple (MVP también válido):
+
+```json
+{
+  "videoUrl": "https://cdn.test/video.mp4",
+  "targetAspectRatio": "9:16",
+  "targetDuration": 30,
+  "focusArea": "center"
+}
+```
+
+Response `202`:
+
+```json
+{
+  "jobId": "uuid",
   "status": "PROCESSING"
 }
 ```
 
-Errores comunes:
-
-- `400 Bad Request` si `videoUrl` es inválido o falta.
-
-## 2) Consultar estado (Polling)
+## 3) Polling de estado en Backend
 
 Endpoint:
 
 - `GET /jobs/{jobId}`
 
-Ejemplo:
-
-- `GET /jobs/b3b3f4cf-91be-46e4-a883-ef6d496f8f4a`
-
-Respuesta en proceso:
-
-- Status: `200 OK`
+Response `200`:
 
 ```json
 {
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
+  "jobId": "uuid",
   "status": "PROCESSING",
   "progressPercentage": 50,
   "result": null,
@@ -60,98 +110,83 @@ Respuesta en proceso:
 }
 ```
 
-Respuesta final exitosa:
+Cuando termina:
 
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "COMPLETED",
-  "progressPercentage": 100,
-  "result": {
-    "outputVideoUrl": "https://cdn.example.com/shorts/final.mp4"
-  },
-  "error": null
-}
-```
+- `result.outputVideoUrl` (si aplica)
+- `result.aiResultPayload` (payload bruto devuelto por IA en callback)
 
-Respuesta final con error:
-
-```json
-{
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "FAILED",
-  "progressPercentage": 100,
-  "result": null,
-  "error": {
-    "code": "PROCESSING_ERROR",
-    "message": "AI timeout",
-    "retryable": false
-  }
-}
-```
-
-Error por job inexistente:
-
-- `404 Not Found`
-
-## 3) Callback de IA
+## 4) Callback IA -> Backend (seguro)
 
 Endpoint:
 
 - `POST /callbacks/ai`
 
-Request (éxito):
+Headers recomendados:
+
+- `Content-Type: application/json`
+- `X-AI-Schema-Version: 1.0.0`
+- `X-Webhook-Secret: <secret-del-job>`
+
+Payload éxito:
 
 ```json
 {
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "COMPLETED",
-  "outputUrl": "https://cdn.example.com/shorts/final.mp4"
+  "job_id": "uuid",
+  "status": "completed",
+  "processing_stats": {
+    "duration_sec": 48.3
+  },
+  "crop_recommendations": [
+    {
+      "start_time": 0.0,
+      "end_time": 48.3,
+      "crop_box": [0.35, 0.0, 0.75, 1.0],
+      "confidence": 0.98
+    }
+  ]
 }
 ```
 
-Request (fallo):
+Payload error:
 
 ```json
 {
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
-  "status": "FAILED",
-  "errorMessage": "AI timeout"
+  "job_id": "uuid",
+  "status": "failed",
+  "error_code": "MODEL_TIMEOUT",
+  "retryable": true
 }
 ```
 
-También soporta alias en snake_case:
-
-- `job_id`
-- `output_url`
-- `error_message`
-
-Respuesta:
-
-- Status: `200 OK`
+Response `200`:
 
 ```json
 {
-  "jobId": "b3b3f4cf-91be-46e4-a883-ef6d496f8f4a",
+  "jobId": "uuid",
   "status": "COMPLETED"
 }
 ```
 
-## Polling recomendado para frontend
+## 5) Polling/Health proxy hacia IA
 
-- Frecuencia sugerida: cada `2` a `5` segundos.
-- Terminar polling cuando `status` sea `COMPLETED` o `FAILED`.
+Endpoints:
 
-## Integración con IA
+- `GET /ai/job/{jobId}`
+- `GET /ai/health`
 
-Base URL configurada en backend:
+Objetivo:
 
-- `ai.service.base-url` (default `http://localhost:8000/svmvp`)
+- Permitir fallback de monitoreo si webhook falla o demora.
 
-Endpoint consumido por backend:
+## 6) Contrato Backend -> IA (worker)
 
+Base URL IA configurable:
+
+- `ai.service.base-url` (default: `http://localhost:8000/svmvp`)
+
+Llamadas que hace backend:
+
+- `POST /ai/scan-subjects`
 - `POST /ai/process-video`
-
-Ruta completa por default:
-
-- `http://localhost:8000/svmvp/ai/process-video`
+- `GET /ai/job/{jobId}`
+- `GET /health`

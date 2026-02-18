@@ -32,7 +32,7 @@ class JobStatusControllerTest {
     void shouldReturnProcessingStatus() throws Exception {
         UUID jobId = UUID.randomUUID();
         when(getJobStatusUseCase.getJobStatus(jobId))
-                .thenReturn(Optional.of(new JobStatusResult(jobId, JobStatus.PROCESSING, null, null)));
+                .thenReturn(Optional.of(new JobStatusResult(jobId, JobStatus.PROCESSING, null, null, null)));
 
         mockMvc.perform(get("/jobs/{jobId}", jobId))
                 .andExpect(status().isOk())
@@ -48,13 +48,15 @@ class JobStatusControllerTest {
                         jobId,
                         JobStatus.COMPLETED,
                         "https://cdn.test/output.mp4",
+                        "{\"crop_recommendations\":[]}",
                         null
                 )));
 
         mockMvc.perform(get("/jobs/{jobId}", jobId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
-                .andExpect(jsonPath("$.result.outputVideoUrl").value("https://cdn.test/output.mp4"));
+                .andExpect(jsonPath("$.result.outputVideoUrl").value("https://cdn.test/output.mp4"))
+                .andExpect(jsonPath("$.result.aiResultPayload").value("{\"crop_recommendations\":[]}"));
     }
 
     @Test
@@ -64,6 +66,7 @@ class JobStatusControllerTest {
                 .thenReturn(Optional.of(new JobStatusResult(
                         jobId,
                         JobStatus.FAILED,
+                        null,
                         null,
                         "MODEL_TIMEOUT"
                 )));

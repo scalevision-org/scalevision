@@ -15,7 +15,9 @@ public class JobMapper {
         entity.setFocusArea(job.getFocusArea());
         entity.setStatus(job.getStatus());
         entity.setAiTaskId(job.getAiTaskId());
+        entity.setWebhookSecret(job.getWebhookSecret());
         entity.setOutputUrl(job.getOutputUrl());
+        entity.setAiResultPayload(job.getAiResultPayload());
         entity.setErrorMessage(job.getErrorMessage());
         entity.setCreatedAt(job.getCreatedAt());
         entity.setUpdatedAt(job.getUpdatedAt());
@@ -34,7 +36,9 @@ public class JobMapper {
         job.applyPersistenceState(
                 entity.getStatus(),
                 entity.getAiTaskId(),
+                entity.getWebhookSecret(),
                 entity.getOutputUrl(),
+                entity.getAiResultPayload(),
                 entity.getErrorMessage()
         );
 

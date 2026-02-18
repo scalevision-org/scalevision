@@ -34,9 +34,14 @@ Más detalle en:
 
 ## API actual (MVP)
 
-- `POST /videos/process`: crea un job de procesamiento.
-- `GET /jobs/{jobId}`: consulta estado por polling.
-- `POST /callbacks/ai`: callback del servicio IA.
+Endpoints oficiales con prefijo:
+
+- `POST /svmvp/ai/scan-subjects`: fase A (discovery).
+- `POST /svmvp/videos/process`: fase B (inicio async).
+- `GET /svmvp/jobs/{jobId}`: estado del job (polling).
+- `POST /svmvp/callbacks/ai`: callback seguro IA -> Backend.
+- `GET /svmvp/ai/job/{jobId}`: proxy polling a worker IA.
+- `GET /svmvp/ai/health`: healthcheck del worker IA.
 
 Contrato completo y ejemplos en:
 
@@ -46,13 +51,13 @@ Contrato completo y ejemplos en:
 
 1. Frontend llama `POST /videos/process`.
 2. Backend responde `202 Accepted` con `jobId`.
-3. Frontend consulta `GET /jobs/{jobId}` cada 2-5 segundos.
-4. Servicio IA llama `POST /callbacks/ai` con `COMPLETED` o `FAILED`.
+3. Frontend consulta `GET /svmvp/jobs/{jobId}` cada 2-5 segundos.
+4. Servicio IA llama `POST /svmvp/callbacks/ai` con `COMPLETED` o `FAILED`.
 5. Frontend sigue consultando hasta estado final.
 
 ## Puertos de trabajo
 
-- Backend: `http://localhost:8080`
+- Backend: `http://localhost:8080/svmvp`
 - IA: `http://localhost:8000/svmvp` (base URL configurable)
 - Frontend: `http://localhost:3000`
 
@@ -65,6 +70,7 @@ Archivo actual:
 Propiedad disponible:
 
 - `spring.application.name=scalevision-backend`
+- `ai.callback.schema-version=1.0.0`
 
 Propiedad opcional para IA:
 

@@ -14,7 +14,9 @@ public class ProcessingJob {
     private final String focusArea;
     private JobStatus status;
     private String aiTaskId;
+    private String webhookSecret;
     private String outputUrl;
+    private String aiResultPayload;
     private String errorMessage;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -107,6 +109,24 @@ public class ProcessingJob {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public String getWebhookSecret() {
+        return webhookSecret;
+    }
+
+    public void setWebhookSecret(String webhookSecret) {
+        this.webhookSecret = webhookSecret;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getAiResultPayload() {
+        return aiResultPayload;
+    }
+
+    public void setAiResultPayload(String aiResultPayload) {
+        this.aiResultPayload = aiResultPayload;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -119,7 +139,9 @@ public class ProcessingJob {
     public void applyPersistenceState(
             JobStatus persistedStatus,
             String persistedAiTaskId,
+            String persistedWebhookSecret,
             String persistedOutputUrl,
+            String persistedAiResultPayload,
             String persistedErrorMessage
     ) {
         if (persistedStatus != null && persistedStatus != JobStatus.PENDING) {
@@ -134,7 +156,9 @@ public class ProcessingJob {
         }
 
         this.aiTaskId = persistedAiTaskId;
+        this.webhookSecret = persistedWebhookSecret;
         this.outputUrl = persistedOutputUrl;
+        this.aiResultPayload = persistedAiResultPayload;
         this.errorMessage = persistedErrorMessage;
     }
 

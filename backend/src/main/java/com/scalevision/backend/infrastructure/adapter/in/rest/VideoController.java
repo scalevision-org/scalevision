@@ -19,7 +19,7 @@ public class VideoController {
         this.processVideoUseCase = processVideoUseCase;
     }
 
-    @PostMapping("/videos/process")
+    @PostMapping({"/videos/process", "/svmvp/videos/process"})
     public ResponseEntity<ProcessVideoResponse> processVideo(@Valid @RequestBody ProcessVideoRequest request) {
         ProcessVideoResult result = processVideoUseCase.processVideo(request.toCommand());
         ProcessVideoResponse response = new ProcessVideoResponse(result.jobId(), result.status().name());

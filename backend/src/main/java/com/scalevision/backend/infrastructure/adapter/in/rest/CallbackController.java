@@ -6,10 +6,13 @@ import com.scalevision.backend.domain.model.JobStatus;
 import com.scalevision.backend.domain.model.ProcessingJob;
 import com.scalevision.backend.infrastructure.adapter.in.rest.dto.AICallbackRequest;
 import com.scalevision.backend.infrastructure.adapter.in.rest.dto.CallbackResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,17 +26,38 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class CallbackController {
 
     private final JobRepository jobRepository;
+    private final String expectedSchemaVersion;
+    private final ObjectMapper objectMapper;
 
-    public CallbackController(JobRepository jobRepository) {
+    public CallbackController(
+            JobRepository jobRepository,
+            @Value("${ai.callback.schema-version:1.0.0}") String expectedSchemaVersion
+    ) {
         this.jobRepository = jobRepository;
+        this.expectedSchemaVersion = expectedSchemaVersion;
+        this.objectMapper = new ObjectMapper();
     }
 
-    @PostMapping("/callbacks/ai")
-    public ResponseEntity<CallbackResponse> handleAiCallback(@Valid @RequestBody AICallbackRequest request) {
+    @PostMapping({"/callbacks/ai", "/svmvp/callbacks/ai"})
+    public ResponseEntity<CallbackResponse> handleAiCallback(
+            @Valid @RequestBody AICallbackRequest request,
+            @RequestHeader(name = "X-AI-Schema-Version", required = false) String schemaVersion,
+            @RequestHeader(name = "X-Webhook-Secret", required = false) String webhookSecret
+    ) {
         UUID jobId = parseJobId(request.jobId());
 
         ProcessingJob job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "job not found"));
+
+        if (job.getWebhookSecret() != null && !job.getWebhookSecret().isBlank()) {
+            if (webhookSecret == null || !job.getWebhookSecret().equals(webhookSecret)) {
+                throw new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "invalid webhook secret");
+            }
+        }
+
+        if (schemaVersion != null && !expectedSchemaVersion.equals(schemaVersion)) {
+            throw new ResponseStatusException(BAD_REQUEST, "schema version is invalid");
+        }
 
         JobStatus nextStatus = mapStatus(request.status());
 
@@ -45,10 +69,12 @@ public class CallbackController {
 
         if (nextStatus == JobStatus.COMPLETED) {
             job.setOutputUrl(request.outputUrl());
+            job.setAiResultPayload(buildSuccessResultJson(request));
         }
 
         if (nextStatus == JobStatus.FAILED) {
             job.setErrorMessage(request.errorMessage());
+            job.setAiResultPayload(buildFailureResultJson(request));
         }
 
         jobRepository.save(job);
@@ -76,5 +102,33 @@ public class CallbackController {
         }
 
         throw new ResponseStatusException(BAD_REQUEST, "status is invalid");
+    }
+
+    private String buildSuccessResultJson(AICallbackRequest request) {
+        try {
+            return objectMapper.writeValueAsString(new SuccessPayload(
+                    request.processingStats(),
+                    request.cropRecommendations()
+            ));
+        } catch (Exception ex) {
+            return "{\"status\":\"completed\"}";
+        }
+    }
+
+    private String buildFailureResultJson(AICallbackRequest request) {
+        try {
+            return objectMapper.writeValueAsString(new FailedPayload(
+                    request.errorMessage(),
+                    request.retryable()
+            ));
+        } catch (Exception ex) {
+            return "{\"status\":\"failed\"}";
+        }
+    }
+
+    private record SuccessPayload(Object processingStats, Object cropRecommendations) {
+    }
+
+    private record FailedPayload(String errorCode, Boolean retryable) {
     }
 }
