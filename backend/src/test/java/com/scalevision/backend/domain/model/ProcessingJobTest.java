@@ -46,6 +46,27 @@ class ProcessingJobTest {
     }
 
     @Test
+    void shouldAllowValidTransitionFromPendingToFailed() {
+        ProcessingJob job = buildJob();
+
+        assertTrue(job.canTransitionTo(JobStatus.FAILED));
+        job.updateStatus(JobStatus.FAILED);
+
+        assertEquals(JobStatus.FAILED, job.getStatus());
+    }
+
+    @Test
+    void shouldAllowValidTransitionFromProcessingToFailed() {
+        ProcessingJob job = buildJob();
+        job.updateStatus(JobStatus.PROCESSING);
+
+        assertTrue(job.canTransitionTo(JobStatus.FAILED));
+        job.updateStatus(JobStatus.FAILED);
+
+        assertEquals(JobStatus.FAILED, job.getStatus());
+    }
+
+    @Test
     void shouldRejectInvalidTransitionFromPendingToCompleted() {
         ProcessingJob job = buildJob();
 
@@ -58,6 +79,20 @@ class ProcessingJobTest {
 
     @Test
     void shouldKeepFinalStatusWithoutTransitions() {
+        ProcessingJob job = buildJob();
+        job.updateStatus(JobStatus.PROCESSING);
+        job.updateStatus(JobStatus.COMPLETED);
+
+        assertFalse(job.canTransitionTo(JobStatus.PROCESSING));
+        assertFalse(job.canTransitionTo(JobStatus.FAILED));
+        assertThrows(
+                InvalidStatusTransitionException.class,
+                () -> job.updateStatus(JobStatus.PROCESSING)
+        );
+    }
+
+    @Test
+    void shouldKeepFailedStatusWithoutTransitions() {
         ProcessingJob job = buildJob();
         job.updateStatus(JobStatus.PROCESSING);
         job.updateStatus(JobStatus.FAILED);
