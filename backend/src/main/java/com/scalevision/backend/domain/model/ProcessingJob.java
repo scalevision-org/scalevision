@@ -116,6 +116,28 @@ public class ProcessingJob {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void applyPersistenceState(
+            JobStatus persistedStatus,
+            String persistedAiTaskId,
+            String persistedOutputUrl,
+            String persistedErrorMessage
+    ) {
+        if (persistedStatus != null && persistedStatus != JobStatus.PENDING) {
+            if (persistedStatus == JobStatus.PROCESSING) {
+                this.updateStatus(JobStatus.PROCESSING);
+            } else if (persistedStatus == JobStatus.FAILED) {
+                this.updateStatus(JobStatus.FAILED);
+            } else if (persistedStatus == JobStatus.COMPLETED) {
+                this.updateStatus(JobStatus.PROCESSING);
+                this.updateStatus(JobStatus.COMPLETED);
+            }
+        }
+
+        this.aiTaskId = persistedAiTaskId;
+        this.outputUrl = persistedOutputUrl;
+        this.errorMessage = persistedErrorMessage;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
