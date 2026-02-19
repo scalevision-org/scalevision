@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+
+ai:
+  service:
+    base-url: ${AI_SERVICE_URL}
+  callback:
+    schema-version: ${AI_CALLBACK_SCHEMA_VERSION}
