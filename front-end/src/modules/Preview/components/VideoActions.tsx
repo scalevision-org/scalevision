@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
+import {toast} from "sonner";
 
 interface VideoActionsProps {
   videoUrl?: string;
@@ -7,13 +8,14 @@ interface VideoActionsProps {
   onExportYouTube?: () => void;
   onExportInstagram?: () => void;
   onDownload?: (videoBlob: Blob) => void;
+  onProcessAnother?: () => void;
 }
 
 /**
  * Descarga un video desde una URL de YouTube Shorts
  * Nota: YouTube tiene restricciones CORS para descargas directas
  * Esta es una solución alternativa usando un servicio de conversión
- */
+
 const downloadVideoFromYouTube = async (youtubeUrl: string): Promise<Blob | null> => {
   try {
     // Extraer ID del video
@@ -41,11 +43,11 @@ const downloadVideoFromYouTube = async (youtubeUrl: string): Promise<Blob | null
     console.error('Error downloading video:', error);
     return null;
   }
-};
+}; */
 
 /**
  * Descarga un archivo blob como archivo local
- */
+
 const triggerBlobDownload = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -55,74 +57,86 @@ const triggerBlobDownload = (blob: Blob, filename: string) => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-};
+}; */
 
 export const VideoActions = ({
   videoUrl,
-  onExportTikTok,
-  onExportYouTube,
-  onExportInstagram,
-  onDownload,
+
+  onProcessAnother,
 }: VideoActionsProps) => {
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownload = async () => {
-    if (!videoUrl) {
-      console.warn('No video URL provided');
-      return;
-    }
-
-    setIsDownloading(true);
+const handleExport = async (platform: string, url?: string) => {
     try {
-      // Intenta descargar desde YouTube
-      const videoBlob = await downloadVideoFromYouTube(videoUrl);
-
-      if (videoBlob) {
-        // Si se obtiene el blob localmente
-        triggerBlobDownload(videoBlob, 'video-reframed.mp4');
-        onDownload?.(videoBlob);
-      } else {
-        // Alternativa: guardar el enlace original o redirigir a servicio
-        console.log('Descarga no disponible localmente. Abriendo en servicio externo...');
-        window.open(videoUrl, '_blank');
+      if (!url) {
+        throw new Error('Missing export URL');
       }
+
+      toast.success('Video ready 🎬', {
+        description: `You can now upload it to ${platform}`,
+        action: {
+          label: 'Open now',
+          onClick: () => {
+            const newWindow = window.open(url, '_blank');
+            if (!newWindow) {
+              toast.error('Popup blocked ❌', {
+                description: `Allow popups to open ${platform}.`,
+              });
+            }
+          },
+        },
+      });
     } catch (error) {
-      console.error('Download error:', error);
+      toast.error('Export failed ❌', {
+        description: `We couldn’t open ${platform}. Please try again.`,
+        action: {
+          label: 'Retry',
+          onClick: () => handleExport(platform, url),
+        },
+      });
+    }
+  };
+
+    const handleDownload = (fileUrl?: string) => {
+    try {
+      if (!fileUrl) {
+        throw new Error('Missing file URL');
+      }
+
+      setIsDownloading(true);
+
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = 'processed-video.mp4';
+      link.click();
+
+      toast('Download started 💾', {
+        description: 'Your video is being saved to your device.',
+        action: {
+          label: 'View in folder',
+          onClick: () => console.log('Mock open folder'),
+        },
+      });
+    } catch (error) {
+      toast.error('Download failed ❌', {
+        description: 'Something went wrong while downloading.',
+        action: {
+          label: 'Try again',
+          onClick: () => handleDownload(fileUrl),
+        },
+      });
     } finally {
       setIsDownloading(false);
     }
   };
 
-  const handleExportTikTok = () => {
-    if (!videoUrl) return;
-    // Copiar URL al portapapeles y abrir TikTok
-    navigator.clipboard.writeText(videoUrl);
-    window.open('https://www.tiktok.com/upload', '_blank');
-    onExportTikTok?.();
-  };
 
-  const handleExportYouTube = () => {
-    if (!videoUrl) return;
-    // Copiar URL al portapapeles y abrir YouTube Studio
-    navigator.clipboard.writeText(videoUrl);
-    window.open('https://studio.youtube.com/uploads', '_blank');
-    onExportYouTube?.();
-  };
-
-  const handleExportInstagram = () => {
-    if (!videoUrl) return;
-    // Copiar URL al portapapeles y abrir Instagram
-    navigator.clipboard.writeText(videoUrl);
-    window.open('https://www.instagram.com/', '_blank');
-    onExportInstagram?.();
-  };
 
   return (
     <div className="w-full max-w-[420px] flex flex-col gap-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={handleExportTikTok}
+          onClick={() => handleExport('TikTok', 'https://www.tiktok.com/upload')}
           disabled={!videoUrl}
           className="group inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark px-4 py-2.5 text-sm font-semibold text-text-light dark:text-text-dark transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-primary/50 hover:enabled:bg-gray-50 dark:hover:enabled:bg-surface-dark/80 hover:enabled:text-primary hover:enabled:shadow-md"
         >
@@ -138,7 +152,7 @@ export const VideoActions = ({
 
         <button
           type="button"
-          onClick={handleExportYouTube}
+          onClick={() => handleExport('YouTube', 'https://studio.youtube.com/uploads')}
           disabled={!videoUrl}
           className="group inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark px-4 py-2.5 text-sm font-semibold text-text-light dark:text-text-dark transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-primary/50 hover:enabled:bg-gray-50 dark:hover:enabled:bg-surface-dark/80 hover:enabled:text-primary hover:enabled:shadow-md"
         >
@@ -154,7 +168,7 @@ export const VideoActions = ({
 
         <button
           type="button"
-          onClick={handleExportInstagram}
+          onClick={() => handleExport('Instagram', 'https://www.instagram.com/')}
           disabled={!videoUrl}
           className="group inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark px-4 py-2.5 text-sm font-semibold text-text-light dark:text-text-dark transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-primary/50 hover:enabled:bg-gray-50 dark:hover:enabled:bg-surface-dark/80 hover:enabled:text-primary hover:enabled:shadow-md"
         >
@@ -170,7 +184,7 @@ export const VideoActions = ({
 
         <button
           type="button"
-          onClick={handleDownload}
+          onClick={() => handleDownload(videoUrl)}
           disabled={!videoUrl || isDownloading}
           className="group inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:border-primary hover:enabled:bg-primary/20 hover:enabled:shadow-md"
         >
@@ -181,6 +195,18 @@ export const VideoActions = ({
       <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
         Al exportar, la URL se copiará al portapapeles y se abrirá la plataforma
       </p>
+  <button
+  type="button"
+  onClick={onProcessAnother}//////
+  className="w-full mt-3 rounded-full border border-gray-200 dark:border-white/10 
+             bg-white dark:bg-surface-dark px-4 py-2.5 text-sm font-semibold 
+             text-text-light dark:text-text-dark transition-all
+             hover:border-primary/50 hover:text-primary
+             active:scale-95"
+>
+  Process another video
+</button>
+
     </div>
   );
 };

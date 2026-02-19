@@ -3,19 +3,27 @@ import { SelectFaceToTrack } from '../components/SelectFaceToTrack';
 import { VideoPreviewMock } from '../components/VideoPreviewMock';
 import { VideoActions } from '../components/VideoActions';
 import { DetectedFace } from '@/domain/types/face.types';
+import { useNavigate } from 'react-router-dom';
 
 interface PreviewPageProps {
   detectedFaces?: DetectedFace[];
   onSelectFace?: (faceId: string) => void;
 }
 
+
 export const PreviewPage = ({
   detectedFaces = [],   
   onSelectFace,
 }: PreviewPageProps) => {
+  const navigate = useNavigate();
+
   const [selectedFaceId, setSelectedFaceId] = useState<string | undefined>(
     detectedFaces[0]?.id
   );
+
+  const handleProcessAnother = () => {
+  navigate('/upload');
+};
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const hasMultipleFaces = useMemo(
@@ -93,6 +101,7 @@ export const PreviewPage = ({
               onExportYouTube={() => console.log('Export YouTube')}
               onExportInstagram={() => console.log('Export Instagram')}
               onDownload={(blob) => console.log('Video downloaded:', blob)}
+                onProcessAnother={handleProcessAnother}
             />
      
           </div>
