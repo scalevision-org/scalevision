@@ -11,6 +11,7 @@ import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
 import com.scalevision.backend.application.port.out.dto.AISubjectCandidate;
 import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,13 +34,14 @@ public class AIServiceHttpAdapter implements AIServicePort {
     private final String baseUrl;
     private final ObjectMapper objectMapper;
 
+    @Autowired
     public AIServiceHttpAdapter(
             @Value("${ai.service.base-url:http://localhost:8000/svmvp}") String baseUrl
     ) {
         this(baseUrl, 2000, 5000, new ObjectMapper());
     }
 
-    public AIServiceHttpAdapter(String baseUrl, int connectTimeoutMs, int readTimeoutMs, ObjectMapper objectMapper) {
+    AIServiceHttpAdapter(String baseUrl, int connectTimeoutMs, int readTimeoutMs, ObjectMapper objectMapper) {
         this.baseUrl = baseUrl;
         this.objectMapper = objectMapper;
 
