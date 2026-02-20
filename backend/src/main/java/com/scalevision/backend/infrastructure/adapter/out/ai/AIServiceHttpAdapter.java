@@ -41,7 +41,7 @@ public class AIServiceHttpAdapter implements AIServicePort {
         this(baseUrl, 2000, 5000, new ObjectMapper());
     }
 
-    AIServiceHttpAdapter(String baseUrl, int connectTimeoutMs, int readTimeoutMs, ObjectMapper objectMapper) {
+    public AIServiceHttpAdapter(String baseUrl, int connectTimeoutMs, int readTimeoutMs, ObjectMapper objectMapper) {
         this.baseUrl = baseUrl;
         this.objectMapper = objectMapper;
 
