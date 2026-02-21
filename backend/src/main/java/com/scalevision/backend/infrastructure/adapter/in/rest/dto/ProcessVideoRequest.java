@@ -16,6 +16,7 @@ public record ProcessVideoRequest(
         Integer targetDuration,
         @JsonAlias("focus_area")
         String focusArea,
+        @Pattern(regexp = "^https?://.*", message = "callbackUrl must start with http:// or https://")
         @JsonAlias("callback_url")
         String callbackUrl,
         @JsonAlias("webhook_secret")

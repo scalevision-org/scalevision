@@ -73,7 +73,7 @@ public class CallbackController {
         }
 
         if (nextStatus == JobStatus.FAILED) {
-            job.setErrorMessage(request.errorMessage());
+            job.setErrorMessage(request.errorCode());
             job.setAiResultPayload(buildFailureResultJson(request));
         }
 
@@ -118,7 +118,7 @@ public class CallbackController {
     private String buildFailureResultJson(AICallbackRequest request) {
         try {
             return objectMapper.writeValueAsString(new FailedPayload(
-                    request.errorMessage(),
+                    request.errorCode(),
                     request.retryable()
             ));
         } catch (Exception ex) {

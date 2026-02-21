@@ -14,8 +14,8 @@ public record AICallbackRequest(
         @JsonAlias({"job_result_url", "output_url"})
         String outputUrl,
 
-        @JsonAlias({"error_code", "error_message"})
-        String errorMessage,
+        @JsonAlias({"error_code"})
+        String errorCode,
 
         Boolean retryable,
 
