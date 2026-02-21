@@ -139,6 +139,25 @@ class ProcessVideoServiceTest {
 
             return copy;
         }
+
+        @Override
+        public List<ProcessingJob> findAll() {
+            return new ArrayList<>(savedJobs);
+        }
+
+        @Override
+        public Optional<ProcessingJob> findByAiTaskId(String aiTaskId) {
+            return savedJobs.stream()
+                    .filter(job -> aiTaskId.equals(job.getAiTaskId()))
+                    .findFirst();
+        }
+
+        @Override
+        public List<ProcessingJob> findByStatus(JobStatus status) {
+            return savedJobs.stream()
+                    .filter(job -> job.getStatus() == status)
+                    .toList();
+        }
     }
 
     private static class FakeAIServicePort implements AIServicePort {
@@ -172,4 +191,6 @@ class ProcessVideoServiceTest {
             throw new UnsupportedOperationException();
         }
     }
+
+
 }

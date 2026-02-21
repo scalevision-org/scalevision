@@ -25,10 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -288,6 +285,25 @@ class AIServiceContractTest {
         @Override
         public Optional<ProcessingJob> findById(UUID id) {
             return Optional.ofNullable(storage.get(id));
+        }
+
+        @Override
+        public List<ProcessingJob> findAll() {
+            return new ArrayList<>(storage.values());
+        }
+
+        @Override
+        public Optional<ProcessingJob> findByAiTaskId(String aiTaskId) {
+            return storage.values().stream()
+                    .filter(job -> aiTaskId.equals(job.getAiTaskId()))
+                    .findFirst();
+        }
+
+        @Override
+        public List<ProcessingJob> findByStatus(JobStatus status) {
+            return storage.values().stream()
+                    .filter(job -> job.getStatus() == status)
+                    .toList();
         }
     }
 }
