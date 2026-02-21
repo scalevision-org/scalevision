@@ -11,6 +11,8 @@ import com.scalevision.backend.application.port.out.dto.AIScanSubjectsResponse;
 import com.scalevision.backend.application.port.out.dto.AISubjectCandidate;
 import com.scalevision.backend.application.port.out.dto.AIWorkerHealthResponse;
 import com.scalevision.backend.application.port.out.dto.AIWorkerJobStatusResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -29,6 +31,9 @@ import java.util.Map;
 
 @Component
 public class AIServiceHttpAdapter implements AIServicePort {
+
+    private static final Logger log = LoggerFactory.getLogger(AIServiceHttpAdapter.class);
+    private static final int MAX_RETRIES = 2;
 
     private final RestTemplate restTemplate;
     private final String baseUrl;
@@ -49,10 +54,13 @@ public class AIServiceHttpAdapter implements AIServicePort {
         requestFactory.setConnectTimeout(connectTimeoutMs);
         requestFactory.setReadTimeout(readTimeoutMs);
         this.restTemplate = new RestTemplate(requestFactory);
+
+
     }
 
     @Override
     public AIProcessingResponse processVideo(AIProcessingRequest request) {
+        return withRetry(() -> {
         Map<String, Object> payload = new HashMap<>();
         payload.put("job_id", request.jobId());
         payload.put("video_url", request.videoUrl());
@@ -96,10 +104,12 @@ public class AIServiceHttpAdapter implements AIServicePort {
         } catch (Exception ex) {
             throw new VideoProcessingException("AI service unexpected error", ex);
         }
+        }, MAX_RETRIES);
     }
 
     @Override
     public AIScanSubjectsResponse scanSubjects(AIScanSubjectsRequest request) {
+        return withRetry(() -> {
         Map<String, Object> payload = new HashMap<>();
         payload.put("video_url", request.videoUrl());
         payload.put("min_appearance_ratio", request.minAppearanceRatio());
@@ -129,6 +139,7 @@ public class AIServiceHttpAdapter implements AIServicePort {
         } catch (Exception ex) {
             throw new VideoProcessingException("AI scan unexpected error", ex);
         }
+        }, MAX_RETRIES);
     }
 
     @Override
@@ -162,6 +173,30 @@ public class AIServiceHttpAdapter implements AIServicePort {
             );
         } catch (Exception ex) {
             throw new VideoProcessingException("AI healthcheck error", ex);
+        }
+    }
+
+    private <T> T withRetry(java.util.function.Supplier<T> action, int maxRetries) {
+        int attempt = 0;
+        while (true) {
+            try {
+                return action.get();
+            } catch (VideoProcessingException ex) {
+                boolean is5xx = ex.getCause() instanceof HttpStatusCodeException hsce &&
+                        hsce.getStatusCode().is5xxServerError();
+                if (is5xx && attempt < maxRetries) {
+                    attempt++;
+                    log.warn("Reintentando llamada a IA, intento {}/{}", attempt, maxRetries);
+                    try {
+                        Thread.sleep(500L * attempt);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ex;
+                    }
+                } else {
+                    throw ex;
+                }
+            }
         }
     }
 
