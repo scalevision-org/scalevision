@@ -91,4 +91,15 @@ class JobStatusControllerTest {
         mockMvc.perform(get("/jobs/{jobId}", "abc"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void shouldReturnProcessingStatusOnSvmvpPath() throws Exception {
+        UUID jobId = UUID.randomUUID();
+        when(getJobStatusUseCase.getJobStatus(jobId))
+                .thenReturn(Optional.of(new JobStatusResult(jobId, JobStatus.PROCESSING, null, null, null)));
+
+        mockMvc.perform(get("/svmvp/jobs/{jobId}", jobId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PROCESSING"));
+    }
 }
