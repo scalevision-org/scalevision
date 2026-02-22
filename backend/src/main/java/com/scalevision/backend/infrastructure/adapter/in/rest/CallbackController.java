@@ -7,6 +7,12 @@ import com.scalevision.backend.domain.model.ProcessingJob;
 import com.scalevision.backend.infrastructure.adapter.in.rest.dto.AICallbackRequest;
 import com.scalevision.backend.infrastructure.adapter.in.rest.dto.CallbackResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +29,7 @@ import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
+@Tag(name = "Callbacks", description = "Endpoints para recibir callbacks de la IA con el resultado del procesamiento")
 public class CallbackController {
 
     private final JobRepository jobRepository;
@@ -38,6 +45,51 @@ public class CallbackController {
         this.objectMapper = new ObjectMapper();
     }
 
+    @Operation(
+            summary = "Recibir callback de la IA",
+            description = "La IA llama a este endpoint cuando termina el procesamiento. Requiere X-Webhook-Secret válido."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Callback procesado correctamente",
+                    content = @Content(examples = @ExampleObject(value = """
+                        {
+                          "jobId": "550e8400-e29b-41d4-a716-446655440000",
+                          "status": "COMPLETED"
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "Request inválido o schema version incorrecto",
+                    content = @Content(examples = @ExampleObject(value = """
+                        {
+                          "code": "BAD_REQUEST",
+                          "message": "schema version is invalid",
+                          "timestamp": "2026-02-21T12:00:00"
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "Webhook secret inválido",
+                    content = @Content(examples = @ExampleObject(value = """
+                        {
+                          "code": "HTTP_401",
+                          "message": "invalid webhook secret",
+                          "timestamp": "2026-02-21T12:00:00"
+                        }
+                        """))),
+            @ApiResponse(responseCode = "404", description = "Job no encontrado",
+                    content = @Content(examples = @ExampleObject(value = """
+                        {
+                          "code": "HTTP_404",
+                          "message": "job not found",
+                          "timestamp": "2026-02-21T12:00:00"
+                        }
+                        """))),
+            @ApiResponse(responseCode = "409", description = "Transición de estado inválida",
+                    content = @Content(examples = @ExampleObject(value = """
+                        {
+                          "code": "HTTP_409",
+                          "message": "invalid status transition",
+                          "timestamp": "2026-02-21T12:00:00"
+                        }
+                        """)))
+    })
     @PostMapping({"/callbacks/ai", "/svmvp/callbacks/ai"})
     public ResponseEntity<CallbackResponse> handleAiCallback(
             @Valid @RequestBody AICallbackRequest request,
