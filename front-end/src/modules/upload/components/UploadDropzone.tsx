@@ -2,40 +2,101 @@ import { useRef, useState } from 'react';
 import DropzoneArea from './DropzoneArea';
 import DropzoneContent from './DropzoneContent';
 
+export interface VideoFileMetadata {
+  name: string;
+  format: string;
+  sizeInBytes: number;
+  durationInSeconds: number;
+}
+
 interface UploadDropzoneProps {
-  onFileSelect?: (file: File) => void;
+  onFileValidated?: (file: File, metadata: VideoFileMetadata) => void;
+  onValidationError?: (message: string) => void;
   isUploading?: boolean;
 }
 
 export default function UploadDropzone({
-  onFileSelect,
+  onFileValidated,
+  onValidationError,
   isUploading = false,
 }: UploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
-  const ACCEPTED_FORMATS = ['video/mp4', 'video/quicktime'];
-  const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+  const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB
+  const MAX_DURATION_SECONDS = 120; // 2 minutes
 
-  const validateFile = (file: File): boolean => {
-    // Validar tipo de archivo
-    if (!ACCEPTED_FORMATS.includes(file.type)) {
-      console.error('Invalid file type:', file.type);
-      return false;
-    }
-
-    // Validar tamaño
-    if (file.size > MAX_FILE_SIZE) {
-      console.error('File too large:', file.size);
-      return false;
-    }
-
-    return true;
+  const formatSizeMB = (sizeInBytes: number): string => {
+    return `${(sizeInBytes / 1024 / 1024).toFixed(1)}MB`;
   };
 
-  const handleFileSelect = (file: File) => {
-    if (validateFile(file)) {
-      onFileSelect?.(file);
+  const formatDuration = (durationInSeconds: number): string => {
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = Math.round(durationInSeconds % 60)
+      .toString()
+      .padStart(2, '0');
+
+    return `${minutes}:${seconds}`;
+  };
+
+  const getVideoDuration = (file: File): Promise<number> =>
+    new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      const objectUrl = URL.createObjectURL(file);
+
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        const duration = video.duration;
+        URL.revokeObjectURL(objectUrl);
+        resolve(duration);
+      };
+      video.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('No se pudo leer la duración del video.'));
+      };
+
+      video.src = objectUrl;
+    });
+
+  const validateFile = async (file: File): Promise<VideoFileMetadata | null> => {
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const fileFormat = extension || file.type || 'desconocido';
+    const isMp4ByExtension = extension === 'mp4';
+    const isMp4ByMime = file.type === 'video/mp4';
+
+    let durationInSeconds = 0;
+    try {
+      durationInSeconds = await getVideoDuration(file);
+    } catch {
+      onValidationError?.(
+        'No pudimos leer la duración. Tu video debe ser MP4, durar máximo 2 minutos y pesar máximo 150MB.'
+      );
+      return null;
+    }
+
+    const isInvalidFormat = !isMp4ByExtension && !isMp4ByMime;
+    const isInvalidSize = file.size > MAX_FILE_SIZE;
+    const isInvalidDuration = durationInSeconds > MAX_DURATION_SECONDS;
+
+    if (isInvalidFormat || isInvalidSize || isInvalidDuration) {
+      onValidationError?.(
+        `Nombre: ${file.name} · Formato: ${fileFormat} · Tamaño: ${formatSizeMB(file.size)} · Duración: ${formatDuration(durationInSeconds)}. Debe ser MP4, máximo 150MB y máximo 2 minutos.`
+      );
+      return null;
+    }
+
+    return {
+      name: file.name,
+      format: fileFormat,
+      sizeInBytes: file.size,
+      durationInSeconds,
+    };
+  };
+
+  const handleFileSelect = async (file: File) => {
+    const metadata = await validateFile(file);
+    if (metadata) {
+      onFileValidated?.(file, metadata);
     } else {
       console.warn('File validation failed');
     }
@@ -44,8 +105,10 @@ export default function UploadDropzone({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleFileSelect(file);
+      void handleFileSelect(file);
     }
+
+    e.target.value = '';
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -67,7 +130,7 @@ export default function UploadDropzone({
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      handleFileSelect(file);
+      void handleFileSelect(file);
     }
   };
 
@@ -81,7 +144,7 @@ export default function UploadDropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="video/mp4,video/quicktime"
+        accept="video/mp4,.mp4"
         hidden
         onChange={handleInputChange}
         disabled={isUploading}
