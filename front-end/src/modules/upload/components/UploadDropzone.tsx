@@ -24,7 +24,7 @@ export default function UploadDropzone({
   const [isDragActive, setIsDragActive] = useState(false);
 
   const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB
-  const MAX_DURATION_SECONDS = 120; // 2 minutes
+  const MAX_DURATION_SECONDS = 180; // 3 minutos
 
   const formatSizeMB = (sizeInBytes: number): string => {
     return `${(sizeInBytes / 1024 / 1024).toFixed(1)}MB`;
@@ -127,6 +127,7 @@ export default function UploadDropzone({
     e.preventDefault();
     e.stopPropagation();
     setIsDragActive(false);
+    console.log('Archivo soltado:', e.dataTransfer.files);
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
