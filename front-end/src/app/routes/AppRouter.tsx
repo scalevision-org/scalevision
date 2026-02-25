@@ -6,7 +6,7 @@ import { PricingPage } from "@/modules/landing/pages/PricingPage"
 import { FeaturesPage } from "@/modules/landing/pages/FeaturesPage"
 import UploadPage from "@/modules/upload/pages/UploadPage"
 import { ConfigurationPage } from "@/modules/configuration/pages/ConfigurationPage";
-import { PreviewPage } from "@/modules/Preview/pages";
+import { PreviewPage } from "@/modules/preview/pages";
 import { DetectedFaceWithVideo } from "@/domain/types/face.types";
 
 export function AppRouter() {

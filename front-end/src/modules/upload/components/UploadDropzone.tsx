@@ -95,6 +95,7 @@ export default function UploadDropzone({
 
   const handleFileSelect = async (file: File) => {
     const metadata = await validateFile(file);
+    console.log(file, metadata);
     if (metadata) {
       onFileValidated?.(file, metadata);
     } else {

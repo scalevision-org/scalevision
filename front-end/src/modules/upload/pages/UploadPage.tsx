@@ -5,6 +5,7 @@ import ProgressBar from "../components/ProgressBar";
 import { Logo } from "@/ui/components/Logo";
 import { Button } from '@/components/ui/button';
 import type { VideoFileMetadata } from '../components/UploadDropzone';
+import { uploadVideo } from '../infrastructure/uploadVideo.service';
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -27,24 +28,36 @@ export default function UploadPage() {
     setValidationError(message);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!pendingFile || !pendingMetadata) {
       return;
     }
 
-    const jobId = crypto.randomUUID();
-    setActiveJobId(jobId);
     setSelectedFile(pendingFile);
     setIsUploading(true);
     setIsConfirmOpen(false);
 
-    navigate('/configuration', {
-      state: {
-        jobId,
+    try {
+      const uploadResponse = await uploadVideo({
         file: pendingFile,
-        metadata: pendingMetadata,
-      },
-    });
+        duration: pendingMetadata.durationInSeconds,
+      });
+
+      const jobId = String(uploadResponse.id);
+      setActiveJobId(jobId);
+
+      navigate('/configuration', {
+        state: {
+          jobId,
+          file: pendingFile,
+          metadata: pendingMetadata,
+          upload: uploadResponse,
+        },
+      });
+    } catch {
+      setIsUploading(false);
+      setValidationError('No se pudo subir el video al backend. Intenta nuevamente.');
+    }
   };
 
   const handleTryAnother = () => {
