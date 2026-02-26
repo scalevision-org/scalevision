@@ -1,0 +1,305 @@
+﻿Especificación de Interfaz IA ↔ Backend (Video Automation 
+v2.0)
+Fecha de Última Actualización: 11 de Febrero, 2026 Versión del Contrato: 1.0.0 Infraestructura 
+Base: Oracle Cloud Infrastructure (OCI) Estado: 
+ 
+1. Resumen Ejecutivo y Arquitectura
+El objetivo de este documento es definir estrictamente las interfaces de comunicación (API REST) 
+entre el Backend (Orquestador) y el Servicio de Inteligencia Artificial (Worker).
+El flujo de trabajo implementa un patrón "Human-in-the-Loop" (Humano en el bucle), dividido en dos 
+fases técnicas:
+1.	Fase de Exploración (Síncrona): El sistema escanea el video almacenado en OCI Object 
+Storage para detectar sujetos recurrentes y presenta miniaturas al usuario.
+2.	Fase de Procesamiento (Asíncrona): El usuario selecciona un sujeto específico. El Backend 
+envía las coordenadas de referencia a la IA, la cual ejecuta un seguimiento (tracking) profundo 
+y devuelve metadatos de recortes (crops) mediante Webhooks.
+Nota de Arquitectura OCI: El servicio de IA no gestiona credenciales IAM de OCI. El acceso a los 
+archivos multimedia se realiza estrictamente a través de OCI Pre-Authenticated Requests (PARs) 
+con fecha de expiración definida.
+ 
+2. Definiciones de Seguridad y Acceso
+2.1. Acceso a Objetos (OCI Object Storage)
+Todos los recursos de video deben ser accesibles mediante URIs HTTPS generadas como Pre-
+Authenticated Requests (PAR).
+●	Permisos: Read-Only (Lectura).
+●	TTL (Time-to-Live): Mínimo 2 horas desde la generación del Job.
+●	Restricción: La URL no debe requerir cabeceras de autorización adicionales ni VPN.
+2.2. Autenticación de Webhook
+Para garantizar que las respuestas asíncronas provienen legítimamente del Servicio de IA, se 
+implementa un mecanismo de "Secreto Compartido".
+●	El Backend genera un webhook_secret (cadena aleatoria de alta entropía) al crear el 
+trabajo.
+●	El Servicio de IA debe devolver este valor exacto en la cabecera HTTP X-Webhook-Secret 
+al invocar el callback.
+ 
+3. Fase A: Endpoint de Escaneo (Discovery)
+Este endpoint se utiliza para obtener una lista rápida de sujetos detectables en el video para su 
+presentación en el Frontend.
+Método: POST Ruta: /ai/scan-subjects Tipo de Operación: Síncrona (Bloqueante) Timeout 
+Sugerido: 30 segundos
+3.1. Cuerpo de la Petición (Request Body)
+
+JSON
+{
+  "video_url": "https://objectstorage.us-ashburn-
+1.oraclecloud.com/n/namespace/b/bucket/o/video.mp4?par=...",
+  "min_appearance_ratio": 0.8,
+  "config": {
+    "max_subjects": 3
+  }
+}
+
+Tabla de Parámetros:
+Campo
+Tipo
+Obligatorio
+Descripción Técnica
+video_url
+String 
+(URI)
+Sí
+URL OCI PAR del video fuente.
+min_appearance_r
+atio
+Float
+si
+Valor entre 0.0 y 1.0. Filtra sujetos que 
+aparecen menos de este porcentaje del 
+tiempo total. Valor por defecto: 0.1.
+config.max_subje
+cts
+Integer
+si
+Límite máximo de candidatos a retornar.
+
+
+
+
+3.2. Respuesta Exitosa (200 OK)
+JSON
+{
+  "status": "success",
+  "subjects": [
+    {
+      "temp_id": "subject_01",
+      "thumbnail_base64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQE...",
+      "appearance_ratio": 0.92,
+      "subject_type": "person",         
+      "reference_data": {
+        "timestamp": 12.5,
+        "box": [0.40, 0.20, 0.60, 0.50]
+      }
+    }
+  ]
+}
+
+Detalle de Campos de Respuesta:
+●	thumbnail_base64: Cadena codificada en Base64 que contiene una imagen JPEG del 
+rostro o sujeto. El Frontend debe renderizar esto directamente (src="data:image..."). No se 
+almacena en OCI Object Storage para reducir latencia y costes de gestión.
+●	reference_data: Objeto crítico. Contiene el contexto espacial y temporal necesario para 
+reinicializar el rastreador en la Fase B. El Backend debe preservar este objeto íntegro.
+
+ 
+4. Fase B: Endpoint de Procesamiento (Deep Tracking)
+Este endpoint inicia el proceso pesado de seguimiento y generación de coordenadas de recorte.
+Método: POST Ruta: /ai/process-video Tipo de Operación: Asíncrona (Non-blocking)
+4.1. Cuerpo de la Petición (Request Body)
+JSON
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "video_url": "https://objectstorage.us-ashburn-
+1.oraclecloud.com/n/namespace/b/bucket/o/video.mp4?par=...",
+  "callback_url": "https://api.backend.com/webhooks/ai-result",
+  "webhook_secret": "sk_live_8f92js92ks01_oci_secure",
+  "tracking_mode": "user_selected",
+  "target_selection": {
+    "reference_timestamp": 12.5,
+    "reference_box": [0.40, 0.20, 0.60, 0.50]
+  },
+  "config": {
+    "target_aspect_ratio": "9:16",
+    "fps_sampled": 30,
+    "include_trajectory_data": false
+  }
+}
+
+Tabla de Parámetros:
+Campo
+Tipo
+Descripción Técnica
+job_id
+UUID
+Identificador único generado por el Backend para trazabilidad.
+tracking_mode
+String
+user_selected (requiere target_selection) o auto 
+(selección algorítmica por defecto).
+target_select
+ion
+Object
+Corresponde exactamente al objeto reference_data obtenido 
+en la Fase A. Define el objetivo a rastrear.
+webhook_secre
+t
+String
+Token de seguridad que la IA deberá devolver en el callback.
+
+4.2. Respuesta Inmediata (202 Accepted)
+Confirma que el trabajo ha entrado en la cola de procesamiento.
+JSON
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "accepted",
+  "estimated_processing_time_sec": 45
+}
+
+ 
+5. Contrato de Callback (Webhook)
+El Servicio de IA invocará la callback_url proporcionada mediante una petición POST al finalizar el 
+análisis o en caso de error fatal.
+5.1. Cabeceras HTTP (Headers) Obligatorias
+El Backend debe rechazar (401 Unauthorized) cualquier petición que no cumpla con:
+●	Content-Type: application/json
+●	X-AI-Schema-Version: 1.0.0
+●	X-Webhook-Secret: [Valor coincidente con el enviado en el request]
+
+5.2. Payload de Éxito (Status: Completed)
+JSON
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "processing_stats": {
+    "duration_sec": 48.3,
+    "resolution": "720x1280",
+    "compute_platform": "OCI_GPU_A10"
+  },
+  "crop_recommendations": [
+    {
+      "start_time": 0.0,
+      "end_time": 48.3,
+      "crop_box": [0.35, 0.0, 0.75, 1.0],
+      "stabilization_applied": true,
+      "confidence": 0.98
+    }
+  ]
+}
+
+Especificación Matemática del Crop Box:
+●	Formato: [x_min, y_min, x_max, y_max]
+●	Sistema de Coordenadas: Normalizado (0.0 a 1.0), relativo a la esquina superior izquierda 
+(0,0).
+●	Responsabilidad: La IA entrega coordenadas ya estabilizadas. El Backend debe aplicar 
+interpolación lineal simple si se renderiza a un framerate mayor que fps_sampled.
+
+
+
+
+
+5.3. Payload de Error (Status: Failed)
+JSON
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "failed",
+  "error_code": "OCI_OBJECT_NOT_FOUND",
+  "message": "The PAR URL returned 404 Not Found.",
+  "retryable": false
+}
+
+Códigos de Error Estándar:
+Código
+Descripción
+Acción Recomendada Backend
+REFERENCE_LOST
+El sujeto seleccionado en Fase A no 
+pudo ser relocalizado en Fase B.
+Solicitar nueva selección al 
+usuario o fallback a modo auto.
+OCI_ACCESS_DEN
+IED
+La URL PAR ha expirado o es 
+inválida (403 Forbidden).
+Generar nueva URL y reintentar.
+MODEL_TIMEOUT
+El procesamiento excedió el tiempo 
+límite.
+Reintento automático (máximo 2 
+veces).
+VIDEO_DECODE_E
+RROR
+Archivo corrupto o códec no 
+soportado.
+Marcar trabajo como fallido 
+definitivamente.
+ 
+6. Políticas de Fallback (Resiliencia)
+Para garantizar la estabilidad del sistema en producción, el Backend debe implementar las siguientes 
+lógicas defensivas:
+1.	Expiración de Webhook: Si no se recibe respuesta en 120 segundos, el Backend debe 
+consultar el estado (polling) o marcar el trabajo como expirado.
+2.	Modo Seguro (Safe Mode): Si la IA retorna un error recuperable o baja confianza 
+(confidence < 0.6), el Backend debe ignorar las coordenadas dinámicas y aplicar un recorte 
+central estático (Center Crop).
+3.	Gestión de Secretos: Los secretos de webhook deben ser rotados o generados 
+dinámicamente por trabajo (job-scoped).
+ 
+7. Control de Cambios
+Cualquier modificación que altere la estructura de los objetos JSON o los tipos de datos requerirá un 
+incremento en la versión mayor del esquema.
+8. Adenda Técnica: Extensiones de Control y Resiliencia (v2.1)
+Esta sección complementa las fases A y B para mitigar riesgos de red y ambigüedad en el 
+procesamiento de medios.
+8.1. Endpoint de Consulta de Estado (Polling)
+Para evitar el escenario de "Backend a ciegas" si el Webhook falla, se define un mecanismo de 
+consulta activa.
+●	Método: GET
+●	Ruta: /ai/job/{job_id}
+●	Descripción: Permite al Backend verificar el progreso si no se recibe el callback en el tiempo 
+esperado.
+●	Respuesta Sugerida:
+●	JSON
+{
+  "job_id": "uuid",
+  "status": "processing | completed | failed",
+  "progress_percentage": 45,
+  "result": { ... } // Solo si el status es completed
+}
+8.2. Contrato de "Latido" y Capacidad (Healthcheck)
+Antes de iniciar trabajos pesados, el Orquestador debe validar la salud del Worker de IA.
+●	Endpoint: GET /health
+●	Payload de Retorno:
+○	status: "OK"
+○	active_jobs: Integer (Carga actual del modelo).
+○	capacity_available: Boolean (Indica si puede aceptar nuevos process-video).
+
+8.3. Definición de Responsabilidad de Medios (Handoff)
+Se clarifica la frontera de ejecución para optimizar costes de cómputo en OCI:
+●	IA (Worker): Responsable únicamente de la generación de metadatos y coordenadas de 
+tracking. 
++1
+●	Backend (Orquestador): Responsable de la ejecución de comandos FFmpeg utilizando los 
+crop_recommendations recibidos en el Webhook. 
++1
+●	Justificación: El Backend cuenta con mayor elasticidad de CPU/RAM para tareas de 
+transcodificación, mientras que el Worker de IA debe quedar libre para tareas de GPU 
+especializadas.
+8.4. Manejo de Casos de Borde (Edge Cases)
+Situación
+Comportamiento Esperado
+Código HTTP
+Video sin sujetos 
+detectados
+Retornar lista subjects vacía [].
+200 OK
+Exceso de 
+tamaño/duración
+Límite actual: 2GB o 30 min. Si se excede, el Job 
+falla inmediatamente.
+413 Payload 
+Too Large
+Fallo de Red en 
+Webhook
+El Worker debe reintentar el callback 3 veces (backoff 
+exponencial) antes de desistir.
+N/A
+

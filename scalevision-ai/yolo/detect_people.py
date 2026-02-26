@@ -1,9 +1,10 @@
 """
-Detección de personas en video usando YOLO26
+Detección y tracking de personas en video usando YOLO26 con tracking integrado
 ScaleVision AI - Módulo de detección de personas
 """
 
 import cv2
+import numpy as np
 from ultralytics import YOLO
 
 
@@ -17,9 +18,10 @@ def detect_people_in_video(video_path="video.mp4", model_path="yolo26n.pt", skip
         skip_frames (int): Número de frames a saltar entre detecciones (0 = procesar todos)
         resize_width (int): Ancho para redimensionar el video (None = tamaño original)
     """
-    # Cargar el modelo YOLO preentrenado
-    print(f"Cargando modelo YOLO: {model_path}")
+    # Cargar el modelo YOLO preentrenado con tracking integrado
+    print(f"Cargando modelo YOLO26 con tracking: {model_path}")
     model = YOLO(model_path)
+    print("Tracking ByteTrack activado (integrado en YOLO)")
     
     # Abrir el video
     cap = cv2.VideoCapture(video_path)
@@ -62,14 +64,17 @@ def detect_people_in_video(video_path="video.mp4", model_path="yolo26n.pt", skip
             new_height = int(resize_width * aspect_ratio)
             frame = cv2.resize(frame, (resize_width, new_height))
         
-        # Realizar detección con YOLO
+        # Realizar detección y tracking con YOLO26 (ByteTrack integrado)
         # class 0 = persona en COCO dataset
-        results = model(frame, classes=[0], verbose=False)
+        # persist=True activa el tracking con IDs persistentes
+        results = model.track(frame, classes=[0], verbose=False, persist=True, tracker="bytetrack.yaml")
         
-        # Procesar resultados
-        for result in results:
-            # Obtener las cajas delimitadoras
-            boxes = result.boxes
+        # Procesar resultados con tracking
+        person_count = 0
+        
+        if results[0].boxes is not None and len(results[0].boxes) > 0:
+            boxes = results[0].boxes
+            person_count = len(boxes)
             
             for box in boxes:
                 # Obtener coordenadas
@@ -79,11 +84,17 @@ def detect_people_in_video(video_path="video.mp4", model_path="yolo26n.pt", skip
                 # Obtener confianza
                 confidence = float(box.conf[0])
                 
+                # Obtener ID de tracking (si existe)
+                if box.id is not None:
+                    track_id = int(box.id[0])
+                    label = f"ID:{track_id} {confidence:.2f}"
+                else:
+                    label = f"Persona {confidence:.2f}"
+                
                 # Dibujar bounding box
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 
-                # Agregar etiqueta con confianza
-                label = f"Persona {confidence:.2f}"
+                # Agregar etiqueta
                 cv2.putText(
                     frame,
                     label,
@@ -93,9 +104,6 @@ def detect_people_in_video(video_path="video.mp4", model_path="yolo26n.pt", skip
                     (0, 255, 0),
                     2
                 )
-        
-        # Mostrar contador de personas detectadas
-        person_count = len(results[0].boxes)
         cv2.putText(
             frame,
             f"Personas detectadas: {person_count}",
@@ -148,9 +156,10 @@ def detect_people_in_video(video_path="video.mp4", model_path="yolo26n.pt", skip
 
 
 if __name__ == "__main__":
-    print("=" * 50)
-    print("ScaleVision AI - Detección de Personas con YOLO")
-    print("=" * 50)
+    print("=" * 60)
+    print("ScaleVision AI - Detección y Tracking de Personas")
+    print("YOLO26 + ByteTrack")
+    print("=" * 60)
     
     # Ejecutar detección con optimizaciones de rendimiento
     # Para mejorar velocidad, puedes usar:
@@ -159,6 +168,6 @@ if __name__ == "__main__":
     # - model_path="yolo26n.pt" (modelo más ligero, ya configurado por defecto)
     
     detect_people_in_video(
-        skip_frames=0,      # Procesa 1 de cada 2 frames (más rápido)
+        skip_frames=0,      # Procesa todos los frames (0 = sin saltar)
         resize_width=640    # Redimensiona a 640px de ancho
     )
