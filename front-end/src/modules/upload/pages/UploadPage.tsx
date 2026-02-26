@@ -5,7 +5,7 @@ import ProgressBar from "../components/ProgressBar";
 import { Logo } from "@/ui/components/Logo";
 import { Button } from '@/components/ui/button';
 import type { VideoFileMetadata } from '../components/UploadDropzone';
-import { uploadVideo } from '../infrastructure/uploadVideo.service';
+import { uploadVideo } from '@/modules/video-processing/api/videoProcessing.api';
 
 export default function UploadPage() {
   const navigate = useNavigate();

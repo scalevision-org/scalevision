@@ -32,6 +32,6 @@ export async function uploadVideo({
     "/videos",
     formData
   );
- console.log("Upload response data:", data);
+
   return data;
 }

@@ -23,8 +23,9 @@ export default function UploadDropzone({
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
-  const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB
-  const MAX_DURATION_SECONDS = 180; // 3 minutos
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const MAX_DURATION_SECONDS = 50; // 50 segundos
+  const ALLOWED_EXTENSIONS = ['mp4', 'avi', 'mov', 'mkv', 'webm', 'mpeg', 'mpg'];
 
   const formatSizeMB = (sizeInBytes: number): string => {
     return `${(sizeInBytes / 1024 / 1024).toFixed(1)}MB`;
@@ -61,26 +62,30 @@ export default function UploadDropzone({
   const validateFile = async (file: File): Promise<VideoFileMetadata | null> => {
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
     const fileFormat = extension || file.type || 'desconocido';
-    const isMp4ByExtension = extension === 'mp4';
-    const isMp4ByMime = file.type === 'video/mp4';
+    const isAllowedByExtension = ALLOWED_EXTENSIONS.includes(extension);
 
     let durationInSeconds = 0;
     try {
       durationInSeconds = await getVideoDuration(file);
     } catch {
       onValidationError?.(
-        'No pudimos leer la duración. Tu video debe ser MP4, durar máximo 2 minutos y pesar máximo 150MB.'
+        'No pudimos leer la duración. Tu video debe tener un formato permitido, durar máximo 30 segundos y pesar máximo 100MB.'
       );
       return null;
     }
 
-    const isInvalidFormat = !isMp4ByExtension && !isMp4ByMime;
+    const isInvalidFormat = !isAllowedByExtension;
     const isInvalidSize = file.size > MAX_FILE_SIZE;
     const isInvalidDuration = durationInSeconds > MAX_DURATION_SECONDS;
+    const hasValidationErrors = [
+      isInvalidFormat,
+      isInvalidSize,
+      isInvalidDuration,
+    ].some(Boolean);
 
-    if (isInvalidFormat || isInvalidSize || isInvalidDuration) {
+    if (hasValidationErrors) {
       onValidationError?.(
-        `Nombre: ${file.name} · Formato: ${fileFormat} · Tamaño: ${formatSizeMB(file.size)} · Duración: ${formatDuration(durationInSeconds)}. Debe ser MP4, máximo 150MB y máximo 2 minutos.`
+        `Nombre: ${file.name} · Formato: ${fileFormat} · Tamaño: ${formatSizeMB(file.size)} · Duración: ${formatDuration(durationInSeconds)}. Formatos permitidos: ${ALLOWED_EXTENSIONS.join(', ')}. Máximo 100MB y máximo 30 segundos.`
       );
       return null;
     }
@@ -146,7 +151,7 @@ export default function UploadDropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="video/mp4,.mp4"
+        accept=".mp4,.avi,.mov,.mkv,.webm,.mpeg,.mpg"
         hidden
         onChange={handleInputChange}
         disabled={isUploading}

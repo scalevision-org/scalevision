@@ -1,8 +1,8 @@
-import { MethodSelector } from "../components/MethodSelector"
-import { DurationSelector } from "../components/DurationSelector"
-import { FallbackCheckbox } from "../components/FallbackCheckbox"
-import { GenerateButton } from "../components/GenerateButton"
 import React, { useState } from "react"
+import { MethodSelector } from "@/modules/configuration/components/MethodSelector"
+import { DurationSelector } from "@/modules/configuration/components/DurationSelector"
+import { FallbackCheckbox } from "@/modules/configuration/components/FallbackCheckbox"
+import { GenerateButton } from "@/modules/configuration/components/GenerateButton"
 
 type ReframingMethod = "center" | "smart"
 type Duration = "Auto" | "30s" | "60s"
