@@ -12,7 +12,7 @@ interface PreviewPageProps {
 
 
 export const PreviewPage = ({
-  detectedFaces = [],   
+  detectedFaces = [],
   onSelectFace,
 }: PreviewPageProps) => {
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ export const PreviewPage = ({
   );
 
   const handleProcessAnother = () => {
-  navigate('/upload');
-};
+    navigate('/upload');
+  };
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const hasMultipleFaces = useMemo(
@@ -31,7 +31,6 @@ export const PreviewPage = ({
     [detectedFaces.length]
   );
 
-  // Get the selected face and its video URL
   const selectedFace = useMemo(
     () => detectedFaces.find((f) => f.id === selectedFaceId),
     [selectedFaceId, detectedFaces]
@@ -46,7 +45,6 @@ export const PreviewPage = ({
 
   return (
     <div className="min-h-screen bg-bg-light dark:bg-bg-dark transition-colors">
-      {/* Header Section */}
       <div className="bg-white dark:bg-bg-dark  dark:border-white/5 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
@@ -60,10 +58,8 @@ export const PreviewPage = ({
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex justify-evenly flex-col sm:flex-row gap-8">
-          {/* Face Selection */}
           {hasMultipleFaces && (
             <SelectFaceToTrack
               faces={detectedFaces}
@@ -73,16 +69,13 @@ export const PreviewPage = ({
             />
           )}
 
-          {/* Video Preview */}
           <div className=" flex flex-col  items-center justify-evenly gap-8">
-            {/* Phone Mockup */}
             <VideoPreviewMock
               videoUrl={currentVideoUrl}
               isPlaying={isPlayingVideo}
               onPlayPauseToggle={setIsPlayingVideo}
             />
 
-            {/* Video Info */}
             <div className="text-center">
               <p className="text-text-light dark:text-text-dark text-sm">
                 {selectedFaceId
@@ -94,19 +87,19 @@ export const PreviewPage = ({
                 detected in video
               </p>
             </div>
-                        {/* Action Buttons */}
-           <VideoActions
+
+            <VideoActions
               videoUrl={currentVideoUrl}
               onExportTikTok={() => console.log('Export TikTok')}
               onExportYouTube={() => console.log('Export YouTube')}
               onExportInstagram={() => console.log('Export Instagram')}
-              onDownload={(blob) => console.log('Video downloaded:', blob)}
-                onProcessAnother={handleProcessAnother}
+              onDownload={(blob: Blob) => console.log('Video downloaded:', blob)}
+              onProcessAnother={handleProcessAnother}
             />
-     
+
           </div>
 
-     
+
         </div>
       </div>
     </div>

@@ -1,0 +1,1 @@
+/* pending/success/error + retorno tipado para UI.*/

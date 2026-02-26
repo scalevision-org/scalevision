@@ -37,9 +37,13 @@ export default function DropzoneContent({
 
       {/* Formatos soportados */}
       <p className="text-xs text-muted-foreground text-center">
-        Maximum file size: <span className="font-semibold">500MB</span>
+        Maximum file size: <span className="font-semibold">150MB</span>
         <br />
-        Supported: <span className="font-semibold">MP4, MOV</span>
+        Maximum duration: <span className="font-semibold">2 minutes</span>
+        <br />
+        Supported: <span className="font-semibold">MP4</span>
+        <br />
+        Supported: <span className="font-semibold">MP4</span>
       </p>
 
       {/* Botón */}
