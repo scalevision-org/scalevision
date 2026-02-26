@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { SelectFaceToTrack } from '@/modules/preview/components/SelectFaceToTrack';
-import { VideoPreviewMock } from '@/modules/preview/components/VideoPreviewMock';
-import { VideoActions } from '@/modules/preview/components/VideoActions';
+import { SelectFaceToTrack } from '../components/SelectFaceToTrack';
+import { VideoPreviewMock } from '../components/VideoPreviewMock';
+import { VideoActions } from '../components/VideoActions';
 import { DetectedFace } from '@/domain/types/face.types';
 import { useNavigate } from 'react-router-dom';
 
@@ -93,7 +93,7 @@ export const PreviewPage = ({
               onExportTikTok={() => console.log('Export TikTok')}
               onExportYouTube={() => console.log('Export YouTube')}
               onExportInstagram={() => console.log('Export Instagram')}
-              onDownload={(blob) => console.log('Video downloaded:', blob)}
+              onDownload={(blob: Blob) => console.log('Video downloaded:', blob)}
               onProcessAnother={handleProcessAnother}
             />
 

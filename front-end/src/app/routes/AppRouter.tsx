@@ -4,9 +4,10 @@ import { AppLayout } from "@/ui/layout/AppLayout";
 import LandingPage from "@/modules/landing/pages/LandingPage"
 import { PricingPage } from "@/modules/landing/pages/PricingPage"
 import { FeaturesPage } from "@/modules/landing/pages/FeaturesPage"
-import UploadPage from "@/modules/upload/pages/UploadPage"
+import UploadPage from "@/modules/video-processing/ui/pages/UploadPage"
 import { ConfigurationPage, PreviewPage } from "@/modules/video-processing/ui/pages";
 import { DetectedFaceWithVideo } from "@/domain/types/face.types";
+
 
 export function AppRouter() {
   // Datos de ejemplo: cada cara con su respectivo video
