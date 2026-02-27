@@ -1,0 +1,60 @@
+{
+    "contract_version": "2.0.0",
+    "release_stage": "MVP",
+    "estado": "EN REVISION",
+    "info": {
+        "title": "Contrato AI ↔ Backend",
+        "description": "Contrato de interfaz entre Backend y servicio de IA ar la fase de request_scan para la automatización del recorte de video (MVP)",
+        "version": "2.0.0",
+        "contact": {
+            "lead": "Laura Dominguez",
+            "team_ai": "Jorge Castro"
+        }
+    },
+    "request": {
+        "method": "POST",
+        "path": "/scan",
+        "summary": "Iniciar análisis de detección de sujetos",
+        "body": {
+            "job_id": "string (UUID)",
+            "video_url": "string (URL con SAS Token o OCI PAR)",
+            "modo_corte": "string (ej: dynamic, center)"
+        }
+    },
+    "polling_responses": {
+        "201_SUBIDO": {
+            "job_id": "UUID",
+            "status": "SUBIDO",
+            "message": "Video recibido y en cola de espera"
+        },
+        "202_PROCESANDO": {
+            "job_id": "UUID",
+            "status": "PROCESANDO",
+            "message": "YOLO analizando frames en OCI"
+        },
+        "200_PROCESADO": {
+            "job_id": "UUID",
+            "status": "PROCESADO",
+            "message": "Análisis completado",
+            "subjects": [
+                {
+                    "subject_id": "string",
+                    "thumbnail_url": "string (URL temporal OCI)",
+                    "confidence": "float"
+                }
+            ]
+        },
+        "404_ERROR_NOT_FOUND": {
+            "error_code": "VIDEO_NOT_FOUND",
+            "message": "Video no encontrado o acceso denegado"
+        },
+        "413_ERROR_DURATION": {
+            "error_code": "MAX_DURATION_EXCEEDED",
+            "message": "El video excede los 50 segundos permitidos"
+        },
+        "415_ERROR_FORMAT": {
+            "error_code": "INVALID_FORMAT",
+            "message": "Formato no soportado (Solo MP4, MPG, MPEG)"
+        }
+    }
+}
