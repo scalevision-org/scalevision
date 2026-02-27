@@ -63,7 +63,7 @@
       "GET_/scan/{id}": {
         "summary": "Consultar estado del análisis",
         "path_params": {
-          "job_id": {
+          "id": {
             "type": "string",
             "format": "uuid",
             "required": true
