@@ -1,6 +1,5 @@
 fastapi
 uvicorn
 numpy
-torch
 ultralytics
 opencv-python
