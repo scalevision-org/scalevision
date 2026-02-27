@@ -1,0 +1,121 @@
+{
+  "contract_version": "2.1.0",
+  "release_stage": "MVP",
+  "estado": "EN_REVISION",
+  "info": {
+    "title": "Contrato AI ↔ Backend (Fase 2: Procesamiento y Recorte)",
+    "description": "Especificación para la ejecución del recorte de video basado en el sujeto seleccionado o estrategia de respaldo",
+    "version": "2.1.0",
+    "contact": {
+      "lead": "Laura Dominguez",
+      "team_ai": "Jorge Castro"
+    }
+  },
+  "api": {
+    "base_path": "/process-video",
+    "endpoints": {
+      "POST_/process-video": {
+        "summary": "Solicitar inicio de renderizado/recorte del video",
+        "http_status": 201,
+        "request_body": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "description": "Debe corresponder a un análisis previamente PROCESADO en /scan"
+          },
+          "target_subject_id": {
+            "type": "string",
+            "required": false,
+            "description": "ID del sujeto obtenido en Phase 1. Obligatorio si strategy = DYNAMIC_CROP"
+          },
+          "strategy": {
+            "type": "string",
+            "enum": [
+              "DYNAMIC_CROP",
+              "CENTER_CROP"
+            ],
+            "required": true,
+            "description": "Estrategia de recorte a aplicar"
+          }
+        },
+        "validation_rules": [
+          "El id debe existir",
+          "El estado del id debe ser PROCESADO",
+          "Si strategy = DYNAMIC_CROP, target_subject_id es obligatorio",
+          "Si strategy = CENTER_CROP, target_subject_id debe ser null"
+        ],
+        "responses": {
+          "201": {
+            "status": "RENDER_ENQUEUED",
+            "message": "Orden de renderizado recibida por el motor FFmpeg"
+          },
+          "404": {
+            "error_code": "JOB_NOT_FOUND",
+            "message": "No existe un análisis asociado al id"
+          },
+          "409": {
+            "error_code": "INVALID_JOB_STATE",
+            "message": "El análisis aún no ha finalizado o no está en estado PROCESADO"
+          },
+          "422": {
+            "error_code": "SUBJECT_NOT_FOUND",
+            "message": "El target_subject_id no existe en los metadatos del análisis"
+          }
+        }
+      },
+      "GET_/process-video/{id}": {
+        "summary": "Consultar estado del renderizado final",
+        "path_params": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          }
+        },
+        "responses": {
+          "202": {
+            "status": "RENDERING",
+            "message": "FFmpeg ejecutando el recorte"
+          },
+          "200": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "required": true
+            },
+            "status": "RENDER_COMPLETED",
+            "message": "Video final generado exitosamente",
+            "output_video_url": {
+              "type": "string",
+              "format": "uri",
+              "protocol": "https",
+              "description": "URL",
+              "expires_in_seconds": 3600
+            },
+            "metadata": {
+              "final_resolution": "string (ej: 720x1280)",
+              "render_time_ms": "integer",
+              "file_size_mb": "float"
+            }
+          },
+          "404": {
+            "error_code": "ID_NOT_FOUND",
+            "message": "No existe render asociado al id"
+          },
+          "500": {
+            "error_code": "RENDERING_FAILURE",
+            "message": "Error crítico en el proceso de FFmpeg"
+          }
+        }
+      }
+    }
+  },
+  "security": {
+    "output_url_requirements": {
+      "https_only": true,
+      "signed_url_required": true,
+      "minimum_expiration_seconds": 300
+    }
+  }
+}
