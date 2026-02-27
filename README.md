@@ -6,8 +6,8 @@ Proyecto ScaleVision.
 
 El backend MVP para FE esta en:
 
-- `/Users/tinus/Developer/scalevision/backend`
+- `backend/`
 
 Documentacion principal:
 
-- `/Users/tinus/Developer/scalevision/backend/README.md`
+- `backend/README.md`

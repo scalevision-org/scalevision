@@ -19,7 +19,7 @@ Backend en Java 21 + Spring Boot 3 para flujo de videos con polling.
 ## Ejecutar local
 
 ```bash
-cd /Users/tinus/Developer/scalevision/backend
+cd backend
 mvn clean spring-boot:run
 ```
 
@@ -38,7 +38,7 @@ H2 Console:
 
 Ver contrato completo en:
 
-- `/Users/tinus/Developer/scalevision/backend/docs/API_CONTRACT_FE.md`
+- `docs/API_CONTRACT_FE.md`
 
 ## Flujo (polling)
 
