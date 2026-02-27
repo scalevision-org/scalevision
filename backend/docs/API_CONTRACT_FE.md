@@ -113,7 +113,13 @@ Formato:
 ```json
 {
   "code": "BAD_REQUEST",
-  "message": "detalle del error",
+  "status": 400,
+  "message": "detalle tecnico del error",
+  "userMessage": "mensaje amigable para FE/usuario",
+  "details": ["campo: descripcion del error"],
+  "suggestion": "accion recomendada",
+  "path": "/svmvp/videos/estado/99",
+  "requestId": "0f4f0a25-27f7-4f37-8b1e-35ce784dca6e",
   "timestamp": "2026-02-27T10:30:00"
 }
 ```
