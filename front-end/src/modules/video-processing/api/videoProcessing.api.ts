@@ -3,7 +3,7 @@ import { httpClient } from "@/infrastructure/http/httpClient";
 export interface UploadVideoPayload {
   file: File;
   nickname?: string;
-  duration?: number;
+  duration: number;
 }
 
 export interface UploadVideoResponse {
@@ -24,14 +24,14 @@ export async function uploadVideo({
     formData.append("nickname", nickname);
   }
 
-  if (typeof duration === "number") {
-    formData.append("duration", String(duration));
-  }
+  formData.append("duration", String(duration));
 
   const { data } = await httpClient.post<UploadVideoResponse>(
-    "/videos",
+    "/video",
     formData
   );
 
   return data;
 }
+
+//get estado del video

@@ -19,4 +19,14 @@ export default defineConfig({
       "@app": path.resolve(__dirname, "src/app"),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://20.228.66.108:8086',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
