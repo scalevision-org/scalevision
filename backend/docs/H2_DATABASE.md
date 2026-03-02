@@ -15,6 +15,8 @@ erDiagram
         VARCHAR error
         DATETIME fecha
         VARCHAR url_video_original
+        VARCHAR ruta_archivo_local
+        VARCHAR ruta_archivo_local_final
         VARCHAR url_mini_vista_01
         VARCHAR url_mini_vista_02
         VARCHAR url_mini_vista_03

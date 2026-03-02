@@ -49,6 +49,9 @@ public class VideoPoc {
     @Column(name = "ruta_archivo_local")
     private String rutaArchivoLocal;
 
+    @Column(name = "ruta_archivo_local_final")
+    private String rutaArchivoLocalFinal;
+
     @Column(name = "url_mini_vista_01")
     private String urlMiniVista01;
 
@@ -163,6 +166,14 @@ public class VideoPoc {
 
     public void setRutaArchivoLocal(String rutaArchivoLocal) {
         this.rutaArchivoLocal = rutaArchivoLocal;
+    }
+
+    public String getRutaArchivoLocalFinal() {
+        return rutaArchivoLocalFinal;
+    }
+
+    public void setRutaArchivoLocalFinal(String rutaArchivoLocalFinal) {
+        this.rutaArchivoLocalFinal = rutaArchivoLocalFinal;
     }
 
     public String getUrlMiniVista01() {

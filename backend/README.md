@@ -34,6 +34,12 @@ H2 Console:
 - User: `sa`
 - Password: vacio
 
+Storage local:
+
+- `uploads/originals/` para video original subido.
+- `uploads/finals/` para video final cortado.
+- `uploads/thumbnails/` para mini-vistas.
+
 ## Endpoints FE
 
 Ver contrato completo en:
