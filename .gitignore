@@ -1,0 +1,11 @@
+# Maven
+**/target/
+backend/uploads/
+
+# IntelliJ
+.idea/
+*.iml
+
+# OS
+.DS_Store
+backend/uploads/
