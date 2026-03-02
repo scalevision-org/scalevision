@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,9 +38,9 @@ public class VideoController {
 
     @PostMapping(value = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UploadVideoResponse> subirVideoArchivo(
-            @RequestPart("video") MultipartFile video,
-            @RequestPart(value = "nickname", required = false) String nickname,
-            @RequestPart(value = "duracion", required = false) Integer duracion
+            @RequestParam("video") MultipartFile video,
+            @RequestParam(value = "nickname", required = false) String nickname,
+            @RequestParam(value = "duracion", required = false) Integer duracion
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideoArchivo(video, nickname, duracion));
     }
