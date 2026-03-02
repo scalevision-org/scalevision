@@ -1,42 +1,57 @@
-import { useState, useMemo } from 'react';
-import { SelectFaceToTrack } from '../components/SelectFaceToTrack';
-import { VideoPreviewMock } from '../components/VideoPreviewMock';
-import { VideoActions } from '../components/VideoActions';
-import { DetectedFace } from '@/domain/types/face.types';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from "react";
+import { SelectFaceToTrack } from "../components/SelectFaceToTrack";
+import { VideoPreviewMock } from "../components/VideoPreviewMock";
+import { VideoActions } from "../components/VideoActions";
+import { DetectedFace } from "@/domain/types/face.types";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useVideoStatus } from "@/modules/video-processing/application/useVideoStatus";
+
+interface PreviewState {
+  jobId?: string;
+}
 
 interface PreviewPageProps {
   detectedFaces?: DetectedFace[];
   onSelectFace?: (faceId: string) => void;
 }
 
-
 export const PreviewPage = ({
   detectedFaces = [],
   onSelectFace,
 }: PreviewPageProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as PreviewState | null;
+  const jobId = state?.jobId;
+  const {
+    status,
+    isPolling,
+    error: statusError,
+  } = useVideoStatus({
+    videoId: jobId,
+    enabled: Boolean(jobId),
+  });
 
   const [selectedFaceId, setSelectedFaceId] = useState<string | undefined>(
-    detectedFaces[0]?.id
+    detectedFaces[0]?.id,
   );
 
   const handleProcessAnother = () => {
-    navigate('/upload');
+    navigate("/upload");
   };
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
   const hasMultipleFaces = useMemo(
     () => detectedFaces.length > 1,
-    [detectedFaces.length]
+    [detectedFaces.length],
   );
 
   const selectedFace = useMemo(
     () => detectedFaces.find((f) => f.id === selectedFaceId),
-    [selectedFaceId, detectedFaces]
+    [selectedFaceId, detectedFaces],
   );
 
-  const currentVideoUrl = selectedFace?.videoUrl || '';
+  const currentVideoUrl = selectedFace?.videoUrl || "";
 
   const handleSelectFace = (faceId: string) => {
     setSelectedFaceId(faceId);
@@ -52,9 +67,25 @@ export const PreviewPage = ({
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             {hasMultipleFaces
-              ? 'Review your vertical crop and select the subject to track.'
-              : 'Previsualiza tu video antes de exportar o compartir'}
+              ? "Review your vertical crop and select the subject to track."
+              : "Previsualiza tu video antes de exportar o compartir"}
           </p>
+          {status && (
+            <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-2">
+              Estado actual: {status}
+              {isPolling ? " (actualizando...)" : ""}
+            </p>
+          )}
+          {statusError && (
+            <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {statusError}
+            </div>
+          )}
+          {!jobId && (
+            <div className="mt-3 w-full max-w-xl rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
+              No se encontro el id del video. Vuelve a la pagina de upload.
+            </div>
+          )}
         </div>
       </div>
 
@@ -80,26 +111,26 @@ export const PreviewPage = ({
               <p className="text-text-light dark:text-text-dark text-sm">
                 {selectedFaceId
                   ? `Tracking: ${detectedFaces.find((f) => f.id === selectedFaceId)?.label}`
-                  : 'Video Preview'}
+                  : "Video Preview"}
               </p>
               <p className="text-text-muted-light dark:text-text-muted-dark text-xs mt-1">
-                {detectedFaces.length} {detectedFaces.length === 1 ? 'subject' : 'subjects'}{' '}
-                detected in video
+                {detectedFaces.length}{" "}
+                {detectedFaces.length === 1 ? "subject" : "subjects"} detected
+                in video
               </p>
             </div>
 
             <VideoActions
               videoUrl={currentVideoUrl}
-              onExportTikTok={() => console.log('Export TikTok')}
-              onExportYouTube={() => console.log('Export YouTube')}
-              onExportInstagram={() => console.log('Export Instagram')}
-              onDownload={(blob: Blob) => console.log('Video downloaded:', blob)}
+              onExportTikTok={() => console.log("Export TikTok")}
+              onExportYouTube={() => console.log("Export YouTube")}
+              onExportInstagram={() => console.log("Export Instagram")}
+              onDownload={(blob: Blob) =>
+                console.log("Video downloaded:", blob)
+              }
               onProcessAnother={handleProcessAnother}
             />
-
           </div>
-
-
         </div>
       </div>
     </div>

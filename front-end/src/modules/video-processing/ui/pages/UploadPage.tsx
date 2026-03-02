@@ -1,35 +1,26 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UploadDropzone from "../components/UploadDropzone";
-import ProgressBar from "../components/ProgressBar";
-import { Logo } from "@/ui/components/Logo";
-import { Button } from '@/components/ui/button';
-import type { VideoFileMetadata } from '../components/UploadDropzone';
-import { useUploadVideo } from '@/modules/video-processing/application/useUploadVideo';
+import { Button } from "@/components/ui/button";
+import type { VideoFileMetadata } from "../components/UploadDropzone";
 
 export default function UploadPage() {
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingMetadata, setPendingMetadata] = useState<VideoFileMetadata | null>(null);
-  const [nickname, setNickname] = useState('');
+  const [pendingMetadata, setPendingMetadata] =
+    useState<VideoFileMetadata | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [, setActiveJobId] = useState<string | null>(null);
-  const { upload, isUploading, error: uploadError, clearError } = useUploadVideo();
 
   const handleFileValidated = (file: File, metadata: VideoFileMetadata) => {
     setPendingFile(file);
     setPendingMetadata(metadata);
-    setNickname('');
     setValidationError(null);
-    clearError();
     setIsConfirmOpen(true);
   };
 
   const handleValidationError = (message: string) => {
     setValidationError(message);
-    clearError();
   };
 
   const handleContinue = async () => {
@@ -37,32 +28,14 @@ export default function UploadPage() {
       return;
     }
 
-    setSelectedFile(pendingFile);
     setIsConfirmOpen(false);
 
-    try {
-      const normalizedNickname = nickname.trim();
-
-      const uploadResponse = await upload({
+    navigate("/configuration", {
+      state: {
         file: pendingFile,
-        nickname: normalizedNickname.length > 0 ? normalizedNickname : undefined,
-        duration: pendingMetadata.durationInSeconds,
-      });
-
-      const jobId = String(uploadResponse.id);
-      setActiveJobId(jobId);
-
-      navigate('/configuration', {
-        state: {
-          jobId,
-          file: pendingFile,
-          metadata: pendingMetadata,
-          upload: uploadResponse,
-        },
-      });
-    } catch {
-      setIsConfirmOpen(true);
-    }
+        metadata: pendingMetadata,
+      },
+    });
   };
 
   const handleConfirmSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -73,11 +46,7 @@ export default function UploadPage() {
   const handleTryAnother = () => {
     setPendingFile(null);
     setPendingMetadata(null);
-    setSelectedFile(null);
-    setNickname('');
     setIsConfirmOpen(false);
-    setActiveJobId(null);
-    clearError();
   };
 
   const formatSizeMB = (sizeInBytes: number): string => {
@@ -88,7 +57,7 @@ export default function UploadPage() {
     const minutes = Math.floor(durationInSeconds / 60);
     const seconds = Math.round(durationInSeconds % 60)
       .toString()
-      .padStart(2, '0');
+      .padStart(2, "0");
 
     return `${minutes}:${seconds}`;
   };
@@ -109,7 +78,8 @@ export default function UploadPage() {
               Tu video cumple los requisitos
             </h2>
             <p className="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
-              El archivo cumple con el formato, tamaño y duración. ¿Deseas continuar con este video?
+              El archivo cumple con el formato, tamaño y duración. ¿Deseas
+              continuar con este video?
             </p>
 
             <div className="mt-4 rounded-xl border border-gray-200 dark:border-white/10 bg-muted/40 dark:bg-surface-dark/40 p-4">
@@ -117,35 +87,22 @@ export default function UploadPage() {
                 <span className="font-semibold">{pendingMetadata.name}</span>
                 <span>Formato: {pendingMetadata.format.toUpperCase()}</span>
                 <span>Tamaño: {formatSizeMB(pendingMetadata.sizeInBytes)}</span>
-                <span>Duración: {formatDuration(pendingMetadata.durationInSeconds)}</span>
+                <span>
+                  Duración:{" "}
+                  {Number.isFinite(pendingMetadata.durationInSeconds)
+                    ? formatDuration(pendingMetadata.durationInSeconds)
+                    : "no disponible"}
+                </span>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
-              <label
-                htmlFor="nickname"
-                className="text-sm font-medium text-text-light dark:text-text-dark"
-              >
-                Nickname (opcional)
-              </label>
-              <input
-                id="nickname"
-                name="nickname"
-                type="text"
-                value={nickname}
-                onChange={(event) => setNickname(event.target.value)}
-                placeholder="Ej: juan_creator"
-                maxLength={50}
-                className="h-10 rounded-md border border-input bg-background px-3 text-sm text-green-800 dark:text-green-300 ring-offset-background placeholder:text-green-600/70 dark:placeholder:text-green-400/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              />
-            </div>
+            <p className="mt-3 text-xs text-text-muted-light dark:text-text-muted-dark">
+              Formatos permitidos: MP4 (H.264/H.265), AVI, MOV, MKV, WEBM, MPEG,
+              MPG. Máximo 100MB y 50 segundos.
+            </p>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Button
-                type="submit"
-                className="rounded-full"
-                disabled={isUploading}
-              >
+              <Button type="submit" className="rounded-full">
                 Continuar
               </Button>
               <Button
@@ -153,7 +110,6 @@ export default function UploadPage() {
                 variant="outline"
                 onClick={handleTryAnother}
                 className="rounded-full"
-                disabled={isUploading}
               >
                 Probar otro video
               </Button>
@@ -172,30 +128,11 @@ export default function UploadPage() {
       <UploadDropzone
         onFileValidated={handleFileValidated}
         onValidationError={handleValidationError}
-        isUploading={isUploading || isConfirmOpen}
+        isUploading={isConfirmOpen}
       />
       {validationError && (
         <div className="w-full max-w-2xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {validationError}
-        </div>
-      )}
-      {uploadError && (
-        <div className="w-full max-w-2xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {uploadError}
-        </div>
-      )}
-      {isUploading && selectedFile && (
-        <div className="w-full flex flex-col rounded-sm p-3 border-muted-foreground bg-muted">
-          <div className="flex items-center w-full gap-1 ">
-            <Logo className="w-6" src="/public/video-player-svgrepo-com.svg" />
-            <ProgressBar progress={50} />
-          </div>
-          <div className="flex justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Processing...</span>
-            <span className=" text-xs font-medium text-muted-foreground">
-              {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
-            </span>
-          </div>
         </div>
       )}
     </div>

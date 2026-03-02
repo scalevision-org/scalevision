@@ -18,16 +18,14 @@ export default function DropzoneContent({
       <div className="flex justify-center">
         <Cloud
           className={`h-12 w-12 transition-all duration-200 ${
-            isDragActive
-              ? 'text-primary scale-110'
-              : 'text-muted-foreground'
+            isDragActive ? "text-primary scale-110" : "text-muted-foreground"
           }`}
         />
       </div>
 
       {/* Título */}
       <h3 className="text-lg md:text-xl font-semibold text-center max-w-md">
-        {isUploading ? 'Uploading...' : 'Drag and drop your video'}
+        {isUploading ? "Uploading..." : "Drag and drop your video"}
       </h3>
 
       {/* Subtítulo */}
@@ -37,13 +35,14 @@ export default function DropzoneContent({
 
       {/* Formatos soportados */}
       <p className="text-xs text-muted-foreground text-center">
-        Maximum file size: <span className="font-semibold">150MB</span>
+        Maximum file size: <span className="font-semibold">100MB</span>
         <br />
-        Maximum duration: <span className="font-semibold">2 minutes</span>
+        Maximum duration: <span className="font-semibold">50 seconds</span>
         <br />
-        Supported: <span className="font-semibold">MP4</span>
-        <br />
-        Supported: <span className="font-semibold">MP4</span>
+        Supported:{" "}
+        <span className="font-semibold">
+          MP4 (H.264/H.265), AVI, MOV, MKV, WEBM, MPEG, MPG
+        </span>
       </p>
 
       {/* Botón */}
@@ -53,7 +52,7 @@ export default function DropzoneContent({
         size="lg"
         className="mt-2 rounded-full px-6 py-2"
       >
-        {isUploading ? 'Uploading...' : 'Select file'}
+        {isUploading ? "Uploading..." : "Select file"}
       </Button>
     </div>
   );
