@@ -12,18 +12,37 @@ import com.scalevision.backend.entity.VideoStatus;
 import com.scalevision.backend.exception.BadRequestException;
 import com.scalevision.backend.exception.ResourceNotFoundException;
 import com.scalevision.backend.repository.VideoRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class VideoService {
 
     private final VideoRepository videoRepository;
+    private final Path uploadRoot;
 
-    public VideoService(VideoRepository videoRepository) {
+    public VideoService(
+            VideoRepository videoRepository,
+            @Value("${app.storage.upload-dir:uploads}") String uploadDir
+    ) {
         this.videoRepository = videoRepository;
+        this.uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(this.uploadRoot);
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo crear el directorio de uploads", ex);
+        }
     }
 
     public UploadVideoResponse subirVideo(UploadVideoRequest request) {
@@ -39,6 +58,41 @@ public class VideoService {
 
         VideoPoc saved = videoRepository.save(video);
         saved.setUrlVideoOriginal(buildOriginalUrl(saved.getId(), saved.getNombre(), saved.getFormato()));
+        saved = videoRepository.save(saved);
+
+        return new UploadVideoResponse(saved.getId(), saved.getUrlVideoOriginal(), saved.getEstado().name());
+    }
+
+    public UploadVideoResponse subirVideoArchivo(MultipartFile videoFile, String nickname, Integer duracion) {
+        if (videoFile == null || videoFile.isEmpty()) {
+            throw new BadRequestException("Debe enviar un archivo de video");
+        }
+
+        String originalName = videoFile.getOriginalFilename() == null ? "video.mp4" : videoFile.getOriginalFilename();
+        String formato = extraerExtension(originalName);
+        String nombreBase = limpiarNombreSinExtension(originalName);
+        String storedFileName = System.currentTimeMillis() + "-" + UUID.randomUUID() + "." + formato;
+
+        Path destination = uploadRoot.resolve(storedFileName);
+        try {
+            Files.copy(videoFile.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo guardar el archivo de video", ex);
+        }
+
+        VideoPoc video = new VideoPoc();
+        video.setNombre(nombreBase);
+        video.setNickname(nickname);
+        video.setTamano(convertirAMegaBytes(videoFile.getSize()));
+        video.setFormato(formato);
+        video.setDuracion(duracion == null ? 60 : duracion);
+        video.setEstado(VideoStatus.SUBIDO);
+        video.setFecha(LocalDateTime.now());
+        video.setActivo(true);
+        video.setRutaArchivoLocal(destination.toString());
+
+        VideoPoc saved = videoRepository.save(video);
+        saved.setUrlVideoOriginal("http://localhost:8080/svmvp/uploads/" + storedFileName);
         saved = videoRepository.save(saved);
 
         return new UploadVideoResponse(saved.getId(), saved.getUrlVideoOriginal(), saved.getEstado().name());
@@ -143,5 +197,26 @@ public class VideoService {
 
     private String buildFinalVideoUrl(Long id) {
         return "https://cdn.scalevision.local/videos/" + id + "/final-vertical.mp4";
+    }
+
+    private String extraerExtension(String fileName) {
+        int lastDot = fileName.lastIndexOf(".");
+        if (lastDot < 0 || lastDot == fileName.length() - 1) {
+            return "mp4";
+        }
+        return fileName.substring(lastDot + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private String limpiarNombreSinExtension(String fileName) {
+        String clean = fileName;
+        int lastDot = fileName.lastIndexOf(".");
+        if (lastDot > 0) {
+            clean = fileName.substring(0, lastDot);
+        }
+        return clean.replace(" ", "-").toLowerCase(Locale.ROOT);
+    }
+
+    private double convertirAMegaBytes(long bytes) {
+        return Math.round((bytes / (1024.0 * 1024.0)) * 100.0) / 100.0;
     }
 }

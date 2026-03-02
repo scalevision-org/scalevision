@@ -40,10 +40,18 @@ Ver contrato completo en:
 
 - `docs/API_CONTRACT_FE.md`
 
+Lista rapida (URL completa):
+
+- `POST http://localhost:8080/svmvp/videos/subir`
+- `GET http://localhost:8080/svmvp/videos/estado/{id}`
+- `GET http://localhost:8080/svmvp/videos/mini-vistas/{id}`
+- `POST http://localhost:8080/svmvp/videos/cortar-video/{id}`
+- `GET http://localhost:8080/svmvp/videos/final/{id}`
+
 ## Flujo (polling)
 
-1. FE llama `POST /videos/subir`.
-2. FE hace polling a `GET /videos/estado/{id}` cada 3-5s.
-3. Cuando llega a `PROCESADO`, FE consulta `GET /videos/mini-vistas/{id}`.
-4. FE envía mini-vista elegida con `POST /videos/cortar-video/{id}`.
-5. FE hace polling a `GET /videos/final/{id}` hasta obtener `CORTADO`.
+1. FE llama `POST http://localhost:8080/svmvp/videos/subir` (multipart/form-data con archivo).
+2. FE hace polling a `GET http://localhost:8080/svmvp/videos/estado/{id}` cada 3-5s.
+3. Cuando llega a `PROCESADO`, FE consulta `GET http://localhost:8080/svmvp/videos/mini-vistas/{id}`.
+4. FE envía mini-vista elegida con `POST http://localhost:8080/svmvp/videos/cortar-video/{id}`.
+5. FE hace polling a `GET http://localhost:8080/svmvp/videos/final/{id}` hasta obtener `CORTADO`.

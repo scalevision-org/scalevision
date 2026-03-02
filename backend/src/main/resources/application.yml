@@ -20,7 +20,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
 
 app:
   cors:
     allowed-origins: http://localhost:3000
+  storage:
+    upload-dir: uploads

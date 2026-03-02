@@ -6,19 +6,13 @@ Base URL:
 
 ## 1) Subir video
 
-- **POST** `/videos/subir`
+- **POST** `http://localhost:8080/svmvp/videos/subir`
 
-Request:
+Request (`multipart/form-data`):
 
-```json
-{
-  "nombre": "mi-video-demo",
-  "nickname": "cliente1",
-  "tamano": 50.0,
-  "formato": "mp4",
-  "duracion": 60
-}
-```
+- `video`: archivo de video (obligatorio)
+- `nickname`: texto (opcional)
+- `duracion`: numero entero en segundos (opcional)
 
 Response `201`:
 
@@ -32,7 +26,7 @@ Response `201`:
 
 ## 2) Estado de procesamiento (polling)
 
-- **GET** `/videos/estado/{id}`
+- **GET** `http://localhost:8080/svmvp/videos/estado/{id}`
 
 Response `200`:
 
@@ -46,7 +40,7 @@ Response `200`:
 
 ## 3) Obtener mini-vistas
 
-- **GET** `/videos/mini-vistas/{id}`
+- **GET** `http://localhost:8080/svmvp/videos/mini-vistas/{id}`
 
 Response `200`:
 
@@ -62,7 +56,7 @@ Response `200`:
 
 ## 4) Cortar video
 
-- **POST** `/videos/cortar-video/{id}`
+- **POST** `http://localhost:8080/svmvp/videos/cortar-video/{id}`
 
 Request:
 
@@ -84,7 +78,7 @@ Response `200`:
 
 ## 5) Obtener video final (polling)
 
-- **GET** `/videos/final/{id}`
+- **GET** `http://localhost:8080/svmvp/videos/final/{id}`
 
 Response `200`:
 

@@ -9,14 +9,17 @@ import com.scalevision.backend.dto.UploadVideoResponse;
 import com.scalevision.backend.dto.VideoFinalResponse;
 import com.scalevision.backend.service.VideoService;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/videos")
@@ -28,9 +31,18 @@ public class VideoController {
         this.videoService = videoService;
     }
 
-    @PostMapping("/subir")
+    @PostMapping(value = "/subir", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UploadVideoResponse> subirVideo(@Valid @RequestBody UploadVideoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideo(request));
+    }
+
+    @PostMapping(value = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UploadVideoResponse> subirVideoArchivo(
+            @RequestPart("video") MultipartFile video,
+            @RequestPart(value = "nickname", required = false) String nickname,
+            @RequestPart(value = "duracion", required = false) Integer duracion
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideoArchivo(video, nickname, duracion));
     }
 
     @GetMapping("/estado/{id}")
