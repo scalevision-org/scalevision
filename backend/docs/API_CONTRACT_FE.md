@@ -19,7 +19,7 @@ Response `201`:
 ```json
 {
   "id": 1,
-  "urlVideoOriginal": "https://cdn.scalevision.local/videos/1/mi-video-demo.mp4",
+  "urlVideoOriginal": "http://localhost:8080/svmvp/uploads/originals/1740969300000-uuid.mp4",
   "estado": "SUBIDO"
 }
 ```
@@ -48,9 +48,9 @@ Response `200`:
 {
   "id": 1,
   "estado": "PROCESADO",
-  "urlMiniVista01": "https://cdn.scalevision.local/videos/1/mini-1.jpg",
-  "urlMiniVista02": "https://cdn.scalevision.local/videos/1/mini-2.jpg",
-  "urlMiniVista03": "https://cdn.scalevision.local/videos/1/mini-3.jpg"
+  "urlMiniVista01": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-1.jpg",
+  "urlMiniVista02": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-2.jpg",
+  "urlMiniVista03": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-3.jpg"
 }
 ```
 
@@ -62,7 +62,7 @@ Request:
 
 ```json
 {
-  "urlMiniVista": "https://cdn.scalevision.local/videos/1/mini-2.jpg"
+  "urlMiniVista": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-2.jpg"
 }
 ```
 
@@ -72,7 +72,7 @@ Response `200`:
 {
   "id": 1,
   "estado": "CORTANDO",
-  "urlVistaSeleccionada": "https://cdn.scalevision.local/videos/1/mini-2.jpg"
+  "urlVistaSeleccionada": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-2.jpg"
 }
 ```
 
@@ -86,9 +86,15 @@ Response `200`:
 {
   "id": 1,
   "estado": "CORTADO",
-  "urlVideoFinal": "https://cdn.scalevision.local/videos/1/final-vertical.mp4"
+  "urlVideoFinal": "http://localhost:8080/svmvp/uploads/finals/1-final-1740969309999.mp4"
 }
 ```
+
+## Estructura de almacenamiento local (BE)
+
+- `uploads/originals/` -> videos subidos por FE.
+- `uploads/finals/` -> videos finales procesados/cortados.
+- `uploads/thumbnails/` -> mini-vistas.
 
 ## Estados (enum)
 

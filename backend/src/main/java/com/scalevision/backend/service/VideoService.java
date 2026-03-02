@@ -30,16 +30,25 @@ import java.util.UUID;
 public class VideoService {
 
     private final VideoRepository videoRepository;
-    private final Path uploadRoot;
+    private final Path storageRoot;
+    private final Path originalsDir;
+    private final Path finalsDir;
+    private final Path thumbnailsDir;
 
     public VideoService(
             VideoRepository videoRepository,
             @Value("${app.storage.upload-dir:uploads}") String uploadDir
     ) {
         this.videoRepository = videoRepository;
-        this.uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.storageRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.originalsDir = storageRoot.resolve("originals");
+        this.finalsDir = storageRoot.resolve("finals");
+        this.thumbnailsDir = storageRoot.resolve("thumbnails");
         try {
-            Files.createDirectories(this.uploadRoot);
+            Files.createDirectories(this.storageRoot);
+            Files.createDirectories(this.originalsDir);
+            Files.createDirectories(this.finalsDir);
+            Files.createDirectories(this.thumbnailsDir);
         } catch (IOException ex) {
             throw new IllegalStateException("No se pudo crear el directorio de uploads", ex);
         }
@@ -73,7 +82,7 @@ public class VideoService {
         String nombreBase = limpiarNombreSinExtension(originalName);
         String storedFileName = System.currentTimeMillis() + "-" + UUID.randomUUID() + "." + formato;
 
-        Path destination = uploadRoot.resolve(storedFileName);
+        Path destination = originalsDir.resolve(storedFileName);
         try {
             Files.copy(videoFile.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
@@ -92,7 +101,7 @@ public class VideoService {
         video.setRutaArchivoLocal(destination.toString());
 
         VideoPoc saved = videoRepository.save(video);
-        saved.setUrlVideoOriginal("http://localhost:8080/svmvp/uploads/" + storedFileName);
+        saved.setUrlVideoOriginal("http://localhost:8080/svmvp/uploads/originals/" + storedFileName);
         saved = videoRepository.save(saved);
 
         return new UploadVideoResponse(saved.getId(), saved.getUrlVideoOriginal(), saved.getEstado().name());
@@ -179,24 +188,34 @@ public class VideoService {
         if (video.getEstado() == VideoStatus.CORTANDO && seconds >= 4) {
             video.setEstado(VideoStatus.CORTADO);
             video.setFecha(LocalDateTime.now());
-            video.setUrlVideoOriginalCortado(buildFinalVideoUrl(video.getId()));
+            String finalFileName = generarArchivoFinal(video);
+            video.setRutaArchivoLocalFinal(finalsDir.resolve(finalFileName).toString());
+            video.setUrlVideoOriginalCortado(buildFinalVideoUrl(finalFileName));
             videoRepository.save(video);
         }
     }
 
     private void generarMiniVistas(VideoPoc video) {
-        video.setUrlMiniVista01("https://cdn.scalevision.local/videos/" + video.getId() + "/mini-1.jpg");
-        video.setUrlMiniVista02("https://cdn.scalevision.local/videos/" + video.getId() + "/mini-2.jpg");
-        video.setUrlMiniVista03("https://cdn.scalevision.local/videos/" + video.getId() + "/mini-3.jpg");
+        String mini1 = video.getId() + "-mini-1.jpg";
+        String mini2 = video.getId() + "-mini-2.jpg";
+        String mini3 = video.getId() + "-mini-3.jpg";
+
+        crearMiniVistaPlaceholder(mini1);
+        crearMiniVistaPlaceholder(mini2);
+        crearMiniVistaPlaceholder(mini3);
+
+        video.setUrlMiniVista01("http://localhost:8080/svmvp/uploads/thumbnails/" + mini1);
+        video.setUrlMiniVista02("http://localhost:8080/svmvp/uploads/thumbnails/" + mini2);
+        video.setUrlMiniVista03("http://localhost:8080/svmvp/uploads/thumbnails/" + mini3);
     }
 
     private String buildOriginalUrl(Long id, String nombre, String formato) {
         String safeNombre = nombre.toLowerCase().replace(" ", "-");
-        return "https://cdn.scalevision.local/videos/" + id + "/" + safeNombre + "." + formato;
+        return "http://localhost:8080/svmvp/uploads/originals/" + id + "-" + safeNombre + "." + formato;
     }
 
-    private String buildFinalVideoUrl(Long id) {
-        return "https://cdn.scalevision.local/videos/" + id + "/final-vertical.mp4";
+    private String buildFinalVideoUrl(String finalFileName) {
+        return "http://localhost:8080/svmvp/uploads/finals/" + finalFileName;
     }
 
     private String extraerExtension(String fileName) {
@@ -218,5 +237,35 @@ public class VideoService {
 
     private double convertirAMegaBytes(long bytes) {
         return Math.round((bytes / (1024.0 * 1024.0)) * 100.0) / 100.0;
+    }
+
+    private String generarArchivoFinal(VideoPoc video) {
+        String formato = video.getFormato() == null ? "mp4" : video.getFormato();
+        String finalFileName = video.getId() + "-final-" + System.currentTimeMillis() + "." + formato;
+        Path destination = finalsDir.resolve(finalFileName);
+
+        try {
+            if (video.getRutaArchivoLocal() != null && Files.exists(Paths.get(video.getRutaArchivoLocal()))) {
+                Files.copy(Paths.get(video.getRutaArchivoLocal()), destination, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.writeString(destination, "VIDEO FINAL SIMULADO");
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo guardar el video final en carpeta finals", ex);
+        }
+
+        return finalFileName;
+    }
+
+    private void crearMiniVistaPlaceholder(String fileName) {
+        Path destination = thumbnailsDir.resolve(fileName);
+        if (Files.exists(destination)) {
+            return;
+        }
+        try {
+            Files.writeString(destination, "MINI-VISTA");
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo guardar mini-vista en carpeta thumbnails", ex);
+        }
     }
 }
