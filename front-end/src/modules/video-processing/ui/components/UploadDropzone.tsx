@@ -64,19 +64,18 @@ export default function UploadDropzone({
     const fileFormat = extension || file.type || 'desconocido';
     const isAllowedByExtension = ALLOWED_EXTENSIONS.includes(extension);
 
-    let durationInSeconds = 0;
+    let durationInSeconds = Number.NaN;
     try {
       durationInSeconds = await getVideoDuration(file);
     } catch {
-      onValidationError?.(
-        'No pudimos leer la duración. Tu video debe tener un formato permitido, durar máximo 30 segundos y pesar máximo 100MB.'
-      );
-      return null;
+      durationInSeconds = Number.NaN;
     }
 
     const isInvalidFormat = !isAllowedByExtension;
     const isInvalidSize = file.size > MAX_FILE_SIZE;
-    const isInvalidDuration = durationInSeconds > MAX_DURATION_SECONDS;
+    const isInvalidDuration =
+      Number.isFinite(durationInSeconds) &&
+      durationInSeconds > MAX_DURATION_SECONDS;
     const hasValidationErrors = [
       isInvalidFormat,
       isInvalidSize,
@@ -85,7 +84,7 @@ export default function UploadDropzone({
 
     if (hasValidationErrors) {
       onValidationError?.(
-        `Nombre: ${file.name} · Formato: ${fileFormat} · Tamaño: ${formatSizeMB(file.size)} · Duración: ${formatDuration(durationInSeconds)}. Formatos permitidos: ${ALLOWED_EXTENSIONS.join(', ')}. Máximo 100MB y máximo 30 segundos.`
+        `Nombre: ${file.name} · Formato: ${fileFormat} · Tamaño: ${formatSizeMB(file.size)} · Duración: ${Number.isFinite(durationInSeconds) ? formatDuration(durationInSeconds) : "no disponible"}. Formatos permitidos: ${ALLOWED_EXTENSIONS.join(", ")}. Máximo 100MB y máximo 50 segundos.`,
       );
       return null;
     }

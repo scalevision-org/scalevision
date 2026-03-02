@@ -1,23 +1,20 @@
-import React, { useState } from "react"
-import { Link } from "react-router-dom"
-import { cn } from "@/lib/utils"
-import { Logo } from "@/ui/components/Logo"
-import { ThemeToggle } from "@/ui/theme/ThemeToggle"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Logo } from "@/shared/ui/Logo";
+import { ThemeToggle } from "@/ui/theme/ThemeToggle";
+import { Button } from "@/shared/ui/button";
 
 export function AppHeader() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
     { label: "Pricing", href: "/pricing" },
     { label: "Features", href: "/features" },
-  ]
+  ];
 
   return (
     <header className="w-full border-b border-slate-200 dark:border-[#1F2A27] bg-surface-light dark:bg-surface-dark transition-colors">
       <div className="max-w-7xl mx-auto px-6 lg:px-16 py-4 flex items-center justify-between">
-        
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 z-50" onClick={() => setIsOpen(false)}>
           <Logo />
           <span className="font-bold text-lg tracking-tight text-text-light dark:text-text-dark">
@@ -25,7 +22,6 @@ export function AppHeader() {
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-text-muted-light dark:text-text-muted-dark">
           {menuItems.map((item) => (
             <a
@@ -38,13 +34,11 @@ export function AppHeader() {
           ))}
         </nav>
 
-        {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
           <Button size="sm">Sign In</Button>
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-3">
           <ThemeToggle />
           <button
@@ -78,7 +72,6 @@ export function AppHeader() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden border-t border-slate-200 dark:border-[#1F2A27] bg-surface-light dark:bg-surface-dark">
           <div className="px-6 py-4 space-y-4">
@@ -101,5 +94,5 @@ export function AppHeader() {
         </div>
       )}
     </header>
-  )
+  );
 }

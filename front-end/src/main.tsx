@@ -1,27 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { Toaster } from "sonner";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { AppProviders } from "@/app/providers";
 
-const queryClient = new QueryClient();
-
-createRoot(document.getElementById('root')!).render(
-    <QueryClientProvider client={queryClient}>
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
-    <Toaster
-      toastOptions={{
-    className:
-      "bg-white dark:bg-surface-dark text-text-light dark:text-text-dark border border-gray-200 dark:border-white/10",
-  }}
-         position="top-right"
-        richColors
-        closeButton
-    />
+    <AppProviders>
+      <App />
+    </AppProviders>
   </StrictMode>,
-
-    </QueryClientProvider>
-
-)
+);
