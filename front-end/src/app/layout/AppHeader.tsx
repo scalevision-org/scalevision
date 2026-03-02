@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/shared/ui/Logo";
 import { ThemeToggle } from "@/ui/theme/ThemeToggle";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 export function AppHeader() {
   const [isOpen, setIsOpen] = useState(false);

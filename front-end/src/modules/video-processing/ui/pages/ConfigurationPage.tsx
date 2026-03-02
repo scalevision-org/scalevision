@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MethodSelector } from "../components/MethodSelector";
 import { GenerateButton } from "../components/GenerateButton";
 import { useUploadFlow } from "@/modules/video-processing/application/useUploadFlow";
 import type { VideoFileMetadata } from "../components/UploadDropzone";
+import { useVideoProcessStore } from "@/modules/video-processing/application/videoProcess.store";
+import { Button } from "@/shared/ui/button";
 
 type ReframingMethod = "center" | "smart";
 
@@ -17,21 +19,35 @@ interface ConfigurationState {
 export const ConfigurationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [method, setMethod] = useState<ReframingMethod>("smart");
   const {
     submitUpload,
     isUploading,
     error: uploadError,
     clearError,
   } = useUploadFlow();
+  const {
+    mode,
+    setMode,
+    setVideoId,
+    mockScenario,
+    setMockScenario,
+    uploadProgress,
+    setUploadProgress,
+  } = useVideoProcessStore();
 
   const state = location.state as ConfigurationState | null;
   const file = state?.file;
 
-  const uploadMode = useMemo<UploadMode>(
-    () => (method === "smart" ? "FACE_TRACKING" : "CENTER_CROP"),
-    [method],
+  const method = useMemo<ReframingMethod>(
+    () => (mode === "FACE_TRACKING" ? "smart" : "center"),
+    [mode],
   );
+
+  const uploadMode = useMemo<UploadMode>(() => mode, [mode]);
+
+  const handleMethodChange = (value: ReframingMethod) => {
+    setMode(value === "smart" ? "FACE_TRACKING" : "CENTER_CROP");
+  };
 
   const handleGenerate = async () => {
     if (!file) {
@@ -48,6 +64,9 @@ export const ConfigurationPage = () => {
     if (!result) {
       return;
     }
+
+    setVideoId(Number(result.jobId));
+    setUploadProgress(100);
 
     navigate("/preview", {
       state: {
@@ -73,10 +92,60 @@ export const ConfigurationPage = () => {
                         border border-slate-200 dark:border-[#1F2A27] 
                         rounded-xl p-6 space-y-6"
         >
-          <MethodSelector value={method} onChange={setMethod} />
+          <MethodSelector value={method} onChange={handleMethodChange} />
           <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
             Si no detecta caras u objetos, el modelo usara un corte centrado.
           </p>
+          <div className="rounded-xl border border-slate-200/60 dark:border-white/10 bg-muted/40 dark:bg-surface-dark/40 p-4 space-y-3">
+            <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
+              <span className="font-semibold">Simulacion:</span> {mockScenario}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMockScenario("CENTER_CROP")}
+              >
+                Center Crop OK
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMockScenario("FACE_TRACKING")}
+              >
+                Face Tracking OK
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMockScenario("ERROR", "UPLOAD")}
+              >
+                Error en subida
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMockScenario("ERROR", "PROCESANDO")}
+              >
+                Error en proceso
+              </Button>
+            </div>
+            <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
+              Progreso upload (mock): {uploadProgress}%
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[0, 25, 50, 75, 100].map((value) => (
+                <Button
+                  key={value}
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUploadProgress(value)}
+                >
+                  {value}%
+                </Button>
+              ))}
+            </div>
+          </div>
           {uploadError && (
             <div className="w-full rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {uploadError}

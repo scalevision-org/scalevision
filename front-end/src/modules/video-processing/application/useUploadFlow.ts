@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
 import { useUploadVideo } from '@/modules/video-processing/application/useUploadVideo';
-import type { UploadVideoResponse } from '@/modules/video-processing/api/videoProcessing.api';
+import type { UploadVideoResponseDto } from "@/modules/video-processing/domain/video.types";
 
 interface UploadFlowInput {
   file: File;
-  mode: 'FACE_TRACKING' | 'CENTER_CROP';
+  mode: "FACE_TRACKING" | "CENTER_CROP";
 }
 
 interface UploadFlowResult {
-  uploadResponse: UploadVideoResponse;
+  uploadResponse: UploadVideoResponseDto;
   jobId: string;
 }
 

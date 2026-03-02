@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UploadDropzone from "../components/UploadDropzone";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import type { VideoFileMetadata } from "../components/UploadDropzone";
 
 export default function UploadPage() {

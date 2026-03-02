@@ -1,59 +1,53 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import {
-  uploadVideo,
-  type UploadVideoResponse,
-} from "@/modules/video-processing/api/videoProcessing.api";
+import { uploadVideo } from "@/modules/video-processing/api/videoProcessing.api";
+import type {
+  UploadVideoRequestDto,
+  UploadVideoResponseDto,
+} from "@/modules/video-processing/domain/video.types";
 
-interface UploadVideoInput {
-  file: File;
-  mode: "FACE_TRACKING" | "CENTER_CROP";
-}
+type UploadVideoInput = UploadVideoRequestDto;
 
 export function useUploadVideo() {
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  const upload = useCallback(
-    async ({ file, mode }: UploadVideoInput): Promise<UploadVideoResponse> => {
-      setIsUploading(true);
-      setError(null);
+  const mutation = useMutation<
+    UploadVideoResponseDto,
+    unknown,
+    UploadVideoInput
+  >({
+    mutationFn: async ({ file, mode }) => {
       console.info("[Upload] Enviando request", {
-        endpoint: "/video",
+        endpoint: "/videos/subir",
         fileName: file.name,
         fileSizeBytes: file.size,
         modo_corte: mode,
       });
-
-      try {
-        const response = await uploadVideo({ file, mode });
-        console.info("[Upload] Request exitosa", response);
-        return response;
-      } catch (error) {
-        const apiMessage = axios.isAxiosError<{ message?: string }>(error)
-          ? error.response?.data?.message
-          : undefined;
-        const message =
-          typeof apiMessage === "string" && apiMessage.trim().length > 0
-            ? apiMessage
-            : "No se pudo subir el video al backend. Intenta nuevamente.";
-        console.error("[Upload] Request fallida", error);
-        setError(message);
-        throw new Error(message);
-      } finally {
-        setIsUploading(false);
-      }
+      const response = await uploadVideo({ file, mode });
+      console.info("[Upload] Request exitosa", response);
+      return response;
     },
-    [],
-  );
+  });
+
+  const error = useMemo(() => {
+    if (!mutation.error) {
+      return null;
+    }
+
+    const apiMessage = axios.isAxiosError<{ message?: string }>(mutation.error)
+      ? mutation.error.response?.data?.message
+      : undefined;
+    return typeof apiMessage === "string" && apiMessage.trim().length > 0
+      ? apiMessage
+      : "No se pudo subir el video al backend. Intenta nuevamente.";
+  }, [mutation.error]);
+
+  const clearError = useCallback(() => {
+    mutation.reset();
+  }, [mutation]);
 
   return {
-    upload,
-    isUploading,
+    upload: mutation.mutateAsync,
+    isUploading: mutation.isPending,
     error,
     clearError,
   };
