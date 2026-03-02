@@ -7,7 +7,7 @@ jobs_db: Dict[str, Any] = {}
 def create_job(job_id: str):
     jobs_db[job_id] = {
         "id": job_id,
-        "created_at": time.time(),
+        #"created_at": time.time(),
         "scan_status": "SUBIDO",
         "process_status": None,
         "process_started_at": None,

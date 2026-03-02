@@ -6,13 +6,13 @@ from uuid import UUID
 class ScanRequest(BaseModel):
     id: UUID
     video_url: HttpUrl
-    modo_corte: Optional[Literal["dynamic", "center"]] = "dynamic"
+    modo_corte: Optional[Literal["face_tracking", "center_crop"]] = "face_tracking"
 
 # Phase 2: Process
 class ProcessRequest(BaseModel):
     id: UUID
     target_subject_id: Optional[str] = None
-    strategy: Literal["DYNAMIC_CROP", "CENTER_CROP"]
+    strategy: Literal["face_tracking", "center_crop"]
 
 # Common Metadata
 class ScanMetadata(BaseModel):

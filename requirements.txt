@@ -1,5 +1,15 @@
+# Servidor y API REST
 fastapi
 uvicorn
+python-multipart
+
+# Core de IA y Visión Computacional
 numpy
+torch
 ultralytics
 opencv-python
+boxmot
+
+# Manipulación de Video y Cloud
+ffmpeg-python
+oci

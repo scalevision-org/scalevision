@@ -8,7 +8,7 @@ Este servicio implementa el pipeline de procesamiento de video en dos fases crí
 
 **Fase 1 (Scan):** Análisis del video original mediante modelos de visión (YOLO/ByteTrack) para identificar sujetos de interés o habilitar un modo de recorte manual/central.
 
-**Fase 2 (Process):** Ejecución del renderizado mediante FFmpeg aplicando la estrategia seleccionada (DYNAMIC_CROP o CENTER_CROP).
+**Fase 2 (Process):** Ejecución del renderizado mediante FFmpeg aplicando la estrategia seleccionada (FACE_TRACKING o CENTER_CROP).
 
 ## Arquitectura Técnica
 
@@ -26,9 +26,9 @@ Bypass de IA: Lógica integrada para omitir el procesamiento pesado cuando el us
 
 POST /scan: Registra el video y define el modo de análisis.
 
-Modo Dynamic: Activa detección de sujetos.
+Modo face_tracking: Activa detección de sujetos.
 
-Modo Center: Bypass inmediato hacia estrategia de respaldo.
+Modo center_crop: Bypass inmediato hacia estrategia de respaldo.
 
 GET /scan/{id}: Consulta el estado del análisis. Devuelve metadatos de sujetos detectados o sugerencias de fallback.
 
@@ -40,7 +40,7 @@ GET /process-video/{id}: Entrega la URL final del video procesado y metadatos de
 
 ## Reglas de Negocio Implementadas
 
-Validación de Estrategia: No se permite ejecutar un DYNAMIC_CROP sin un target_subject_id válido obtenido en la Fase 1.
+Validación de Estrategia: No se permite ejecutar un FACE_TRAKING sin un target_subject_id válido obtenido en la Fase 1.
 
 Guardias de Estado: El proceso de renderizado (Fase 2) está bloqueado hasta que la Fase 1 devuelva un estado PROCESADO.
 
@@ -50,14 +50,14 @@ Bypass Eficiente: Si se inicializa en modo center, el sistema ignora las esperas
 
 Instalar dependencias:
 
-```
-pip install fastapi uvicorn pydantic requests
+```bash
+pip install --no-cache-dir -r requirements.txt
 ```
 
 Iniciar el servidor:
 
-```
-uvicorn main:app --reload
+```bash
+uvicorn main:app
 ```
 
 
@@ -71,4 +71,4 @@ El servicio cumple rigurosamente con las especificaciones definidas en:
 
 <br>Lead Developer: Laura Dominguez
 <br>AI Developer: Jorge Castro
-<br>Estado del Proyecto: MVP - EN REVISIÓN
+<br>Estado del Proyecto: MVP - EN PRUEBAS DE INTEGRACION
