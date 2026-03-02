@@ -1,5 +1,6 @@
 # Maven
 **/target/
+backend/uploads/
 
 # IntelliJ
 .idea/
@@ -7,3 +8,4 @@
 
 # OS
 .DS_Store
+backend/uploads/
