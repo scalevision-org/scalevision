@@ -30,3 +30,6 @@ app:
     allowed-origins: http://localhost:3000
   storage:
     upload-dir: uploads
+  ai:
+    base-url: http://localhost:8000
+    local-processing-dir: /tmp/scalevision-ia-check

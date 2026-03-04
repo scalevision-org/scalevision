@@ -1,5 +1,15 @@
+# Python / IA
+.venv/
+__pycache__/
+*.pyc
+.env
+scalevision_data/
+*.mp4
+
 # Maven
 **/target/
+
+# Backend local storage
 backend/uploads/
 
 # IntelliJ
@@ -8,4 +18,3 @@ backend/uploads/
 
 # OS
 .DS_Store
-backend/uploads/

@@ -55,6 +55,9 @@ public class VideoPoc {
     @Column(name = "ruta_archivo_local_final")
     private String rutaArchivoLocalFinal;
 
+    @Column(name = "ia_job_id", unique = true)
+    private String iaJobId;
+
     @Column(name = "url_mini_vista_01")
     private String urlMiniVista01;
 
@@ -185,6 +188,14 @@ public class VideoPoc {
 
     public void setRutaArchivoLocalFinal(String rutaArchivoLocalFinal) {
         this.rutaArchivoLocalFinal = rutaArchivoLocalFinal;
+    }
+
+    public String getIaJobId() {
+        return iaJobId;
+    }
+
+    public void setIaJobId(String iaJobId) {
+        this.iaJobId = iaJobId;
     }
 
     public String getUrlMiniVista01() {
