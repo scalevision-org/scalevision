@@ -7,13 +7,28 @@ public class MiniVistasResponse {
     private String urlMiniVista01;
     private String urlMiniVista02;
     private String urlMiniVista03;
+    private Boolean fallbackActive;
+    private String fallbackStrategy;
+    private String fallbackReason;
 
-    public MiniVistasResponse(Long id, String estado, String urlMiniVista01, String urlMiniVista02, String urlMiniVista03) {
+    public MiniVistasResponse(
+            Long id,
+            String estado,
+            String urlMiniVista01,
+            String urlMiniVista02,
+            String urlMiniVista03,
+            Boolean fallbackActive,
+            String fallbackStrategy,
+            String fallbackReason
+    ) {
         this.id = id;
         this.estado = estado;
         this.urlMiniVista01 = urlMiniVista01;
         this.urlMiniVista02 = urlMiniVista02;
         this.urlMiniVista03 = urlMiniVista03;
+        this.fallbackActive = fallbackActive;
+        this.fallbackStrategy = fallbackStrategy;
+        this.fallbackReason = fallbackReason;
     }
 
     public Long getId() {
@@ -34,5 +49,17 @@ public class MiniVistasResponse {
 
     public String getUrlMiniVista03() {
         return urlMiniVista03;
+    }
+
+    public Boolean getFallbackActive() {
+        return fallbackActive;
+    }
+
+    public String getFallbackStrategy() {
+        return fallbackStrategy;
+    }
+
+    public String getFallbackReason() {
+        return fallbackReason;
     }
 }
