@@ -71,7 +71,7 @@ class ScaleVisionPipeline:
                     }
                 )
         else:
-            print("WARNING: Ningún sujeto alcanzó el 70% de aparición.")
+            print("WARNING: Ningún sujeto alcanzó el 40% de aparición.")
             response["fallback"] = {
                 "is_active": True,
                 "strategy": "center_crop",

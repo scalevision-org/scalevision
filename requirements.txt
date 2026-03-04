@@ -1,6 +1,6 @@
 # Servidor y API REST
 fastapi
-uvicorn
+hypercorn
 python-multipart
 
 # Core de IA y Visión Computacional

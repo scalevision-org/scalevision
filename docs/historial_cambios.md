@@ -73,3 +73,8 @@ Este log documenta la evolución del motor de IA hasta alcanzar el grado de prod
    * **Objetivo:** Iniciar el video exactamente cuando el protagonista es el foco de la acción, ignorando su presencia en el fondo.
    * **Incidencia:** El rastreador detectaba al sujeto en el frame 0, pero solo mostraba un hombro en el borde o estaba a 50 metros de distancia, generando segundos de tiempo muerto visual.
    * **Resolución:** Inyección de *Heurística de Bordes* (ignorar detecciones a < 10px de los márgenes) y *Regla de Relevancia Espacial* (el sujeto debe alcanzar el 50% de su área máxima para gatillar el `start_frame`).
+
+9. **Validación de Protocolo y Contrato REST (Integración MVC)**
+   * **Objetivo:** Habilitar multiplexación de red y garantizar la compatibilidad estricta de tipos de datos con el Backend (Java Spring Boot) y Frontend.
+   * **Incidencia:** El servidor base (`uvicorn`) bloqueaba el tráfico concurrente pesado (HTTP/1.1), y el uso del tipo `HttpUrl` (Pydantic) generaba objetos serializados incompatibles con las validaciones de String plano del consumidor.
+   * **Resolución:** Migración del motor ASGI a **Hypercorn** para soporte nativo HTTP/2. Refactorización de todos los DTOs (`models.py`) a tipos primitivos (`str`), y adición del middleware CORS para *bypass* de seguridad en demostraciones locales.
