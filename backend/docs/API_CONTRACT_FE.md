@@ -10,9 +10,18 @@ Base URL:
 
 Request (`multipart/form-data`):
 
-- `video`: archivo de video (obligatorio)
-- `nickname`: texto (opcional)
-- `duracion`: numero entero en segundos (opcional)
+- `file`: archivo de video (obligatorio)
+- `modo_corte`: texto obligatorio con valores:
+  - `face_tracking`
+  - `center_crop`
+
+Ejemplo terminal:
+
+```bash
+curl -X POST "http://localhost:8080/svmvp/videos/subir" \
+  -F "file=@/ruta/demo.mp4" \
+  -F "modo_corte=face_tracking"
+```
 
 Response `201`:
 
