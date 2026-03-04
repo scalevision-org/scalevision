@@ -74,16 +74,25 @@ public class VideoService {
         return new UploadVideoResponse(saved.getId(), saved.getUrlVideoOriginal(), saved.getEstado().name());
     }
 
-    public UploadVideoResponse subirVideoArchivo(MultipartFile videoFile, String modoCorteRaw) {
+    public UploadVideoResponse subirVideoArchivo(
+            MultipartFile videoFile,
+            String modoCorteRaw,
+            String nombre,
+            Double tamano,
+            String formato
+    ) {
         if (videoFile == null || videoFile.isEmpty()) {
             throw new BadRequestException("Debe enviar un archivo de video");
         }
         ModoCorte modoCorte = ModoCorte.fromValue(modoCorteRaw);
 
         String originalName = videoFile.getOriginalFilename() == null ? "video.mp4" : videoFile.getOriginalFilename();
-        String formato = extraerExtension(originalName);
+        String formatoArchivo = extraerExtension(originalName);
         String nombreBase = limpiarNombreSinExtension(originalName);
-        String storedFileName = System.currentTimeMillis() + "-" + UUID.randomUUID() + "." + formato;
+        String formatoFinal = (formato == null || formato.isBlank()) ? formatoArchivo : formato.toLowerCase(Locale.ROOT);
+        String nombreFinal = (nombre == null || nombre.isBlank()) ? nombreBase : nombre.trim();
+        double tamanoFinal = tamano == null ? convertirAMegaBytes(videoFile.getSize()) : tamano;
+        String storedFileName = System.currentTimeMillis() + "-" + UUID.randomUUID() + "." + formatoArchivo;
 
         Path destination = originalsDir.resolve(storedFileName);
         try {
@@ -93,10 +102,10 @@ public class VideoService {
         }
 
         VideoPoc video = new VideoPoc();
-        video.setNombre(nombreBase);
+        video.setNombre(nombreFinal);
         video.setNickname(null);
-        video.setTamano(convertirAMegaBytes(videoFile.getSize()));
-        video.setFormato(formato);
+        video.setTamano(tamanoFinal);
+        video.setFormato(formatoFinal);
         video.setDuracion(60);
         video.setModoCorte(modoCorte.getValue());
         video.setEstado(VideoStatus.SUBIDO);

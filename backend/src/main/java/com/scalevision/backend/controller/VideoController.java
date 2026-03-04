@@ -4,7 +4,6 @@ import com.scalevision.backend.dto.CortarVideoRequest;
 import com.scalevision.backend.dto.CortarVideoResponse;
 import com.scalevision.backend.dto.EstadoVideoResponse;
 import com.scalevision.backend.dto.MiniVistasResponse;
-import com.scalevision.backend.dto.UploadVideoRequest;
 import com.scalevision.backend.dto.UploadVideoResponse;
 import com.scalevision.backend.dto.VideoFinalResponse;
 import com.scalevision.backend.service.VideoService;
@@ -31,17 +30,16 @@ public class VideoController {
         this.videoService = videoService;
     }
 
-    @PostMapping(value = "/subir", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UploadVideoResponse> subirVideo(@Valid @RequestBody UploadVideoRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideo(request));
-    }
-
     @PostMapping(value = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UploadVideoResponse> subirVideoArchivo(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("modo_corte") String modoCorte
+            @RequestParam("modo_corte") String modoCorte,
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "tamano", required = false) Double tamano,
+            @RequestParam(value = "formato", required = false) String formato
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideoArchivo(file, modoCorte));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(videoService.subirVideoArchivo(file, modoCorte, nombre, tamano, formato));
     }
 
     @GetMapping("/estado/{id}")
