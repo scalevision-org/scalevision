@@ -1,4 +1,4 @@
-# Contrato API FE - Backend MVC
+# Contrato API FE - Backend MVC + IA
 
 Base URL:
 
@@ -15,10 +15,10 @@ Request (`multipart/form-data`):
   - `face_tracking`
   - `center_crop`
 - `nombre`: texto opcional
-- `tamano`: numero decimal opcional
+- `tamano`: número decimal opcional
 - `formato`: texto opcional (ejemplo: `MP4`)
 
-Campos eliminados del contrato:
+Campos removidos del contrato:
 
 - `nickname`
 - `duracion`
@@ -44,17 +44,29 @@ Response `201`:
 }
 ```
 
-## 2) Estado de procesamiento (polling)
+## 2) Estado de análisis (Fase 1, polling)
 
 - **GET** `http://localhost:8080/svmvp/videos/estado/{id}`
 
-Response `200`:
+Response `200` (ejemplo procesando):
 
 ```json
 {
   "id": 1,
   "estado": "PROCESANDO",
+  "errorCode": null,
   "error": null
+}
+```
+
+Response `200` (ejemplo error):
+
+```json
+{
+  "id": 1,
+  "estado": "ERROR",
+  "errorCode": "VIDEO_NOT_FOUND",
+  "error": "Video no encontrado o acceso denegado"
 }
 ```
 
@@ -70,15 +82,33 @@ Response `200`:
   "estado": "PROCESADO",
   "urlMiniVista01": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-1.jpg",
   "urlMiniVista02": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-2.jpg",
-  "urlMiniVista03": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-3.jpg"
+  "urlMiniVista03": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-3.jpg",
+  "fallbackActive": false,
+  "fallbackStrategy": null,
+  "fallbackReason": null
 }
 ```
 
-## 4) Cortar video
+Si IA no detecta sujetos:
+
+```json
+{
+  "id": 1,
+  "estado": "PROCESADO",
+  "urlMiniVista01": null,
+  "urlMiniVista02": null,
+  "urlMiniVista03": null,
+  "fallbackActive": true,
+  "fallbackStrategy": "CENTER_CROP",
+  "fallbackReason": "No se detectaron sujetos"
+}
+```
+
+## 4) Cortar video (Fase 2)
 
 - **POST** `http://localhost:8080/svmvp/videos/cortar-video/{id}`
 
-Request:
+Request para `face_tracking`:
 
 ```json
 {
@@ -86,12 +116,20 @@ Request:
 }
 ```
 
-Response `200`:
+Request para `center_crop`:
+
+```json
+{
+  "urlMiniVista": null
+}
+```
+
+Response `200` (ejemplo):
 
 ```json
 {
   "id": 1,
-  "estado": "CORTANDO",
+  "estado": "CORTAR",
   "urlVistaSeleccionada": "http://localhost:8080/svmvp/uploads/thumbnails/1-mini-2.jpg"
 }
 ```
@@ -126,7 +164,7 @@ Response `200`:
 - `CORTADO`
 - `ERROR`
 
-## Errores
+## Errores generales de BE
 
 Formato:
 
@@ -140,6 +178,6 @@ Formato:
   "suggestion": "accion recomendada",
   "path": "/svmvp/videos/estado/99",
   "requestId": "0f4f0a25-27f7-4f37-8b1e-35ce784dca6e",
-  "timestamp": "2026-02-27T10:30:00"
+  "timestamp": "2026-03-04T10:30:00"
 }
 ```
