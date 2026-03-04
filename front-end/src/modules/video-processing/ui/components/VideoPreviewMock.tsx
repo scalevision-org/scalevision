@@ -57,7 +57,7 @@ export const VideoPreviewMock = ({
         <ImageIcon className="w-12 h-12 text-gray-600 mb-3" />
       </div>
       <p className="text-gray-500 text-xs text-center px-4">
-        No video available
+        No hay video disponible
       </p>
     </div>
   );
@@ -68,7 +68,7 @@ export const VideoPreviewMock = ({
     }
 
     switch (videoType) {
-      case 'video':
+      case "video":
         return (
           <video
             className="absolute inset-0 w-full h-full object-cover"
@@ -77,8 +77,8 @@ export const VideoPreviewMock = ({
             controls={false}
           />
         );
-      case 'embed':
-      case 'youtube':
+      case "embed":
+      case "youtube":
         return (
           <iframe
             className="absolute inset-0 w-full h-full border-none"
@@ -88,7 +88,7 @@ export const VideoPreviewMock = ({
             loading="lazy"
           />
         );
-      case 'image':
+      case "image":
       default:
         return (
           <div
@@ -114,7 +114,7 @@ export const VideoPreviewMock = ({
         {renderVideoContent()}
 
         {/* Video Controls Overlay - Solo mostrar si hay URL */}
-        {effectiveUrl && !isLoading && videoType !== 'youtube' && (
+        {effectiveUrl && !isLoading && videoType !== "youtube" && (
           <div className="absolute inset-0 flex flex-col justify-between p-6 pointer-events-none">
             {/* Top Menu */}
             <div className="pointer-events-auto flex justify-end">
@@ -134,13 +134,10 @@ export const VideoPreviewMock = ({
               <button
                 onClick={handlePlayPause}
                 className="flex items-center justify-center rounded-full size-16 bg-black/40 text-white backdrop-blur-sm border border-white/20 hover:scale-105 transition-transform hover:bg-primary/60"
-                aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                aria-label={isPlaying ? "Pausar video" : "Reproducir video"}
               >
                 {isPlaying ? (
-                  <svg
-                    className="w-8 h-8 fill-current"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
                     <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                   </svg>
                 ) : (

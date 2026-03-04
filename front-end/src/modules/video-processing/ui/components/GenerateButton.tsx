@@ -14,13 +14,14 @@ export const GenerateButton = ({ onGenerate, disabled }: GenerateButtonProps) =>
         className="w-full bg-primary hover:bg-accent text-white
                    font-bold py-4 rounded-lg shadow-lg shadow-primary/20
                    transition active:scale-[0.98]
-                   disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
-        Generate Preview
+                   disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        Generar vista previa
       </button>
 
       <p className="text-center text-xs mt-3 text-text-muted-light dark:text-text-muted-dark">
-        Estimated processing time: ~45 seconds
+        Tiempo estimado de procesamiento: ~45 segundos
       </p>
     </div>
-  )
+  );
 }

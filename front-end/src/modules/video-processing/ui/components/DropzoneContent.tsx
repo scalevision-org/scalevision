@@ -25,21 +25,21 @@ export default function DropzoneContent({
 
       {/* Título */}
       <h3 className="text-lg md:text-xl font-semibold text-center max-w-md">
-        {isUploading ? "Uploading..." : "Drag and drop your video"}
+        {isUploading ? "Subiendo..." : "Arrastra y suelta tu video"}
       </h3>
 
       {/* Subtítulo */}
       <span className="text-sm text-muted-foreground text-center max-w-md">
-        or click to browse
+        o haz clic para buscar
       </span>
 
       {/* Formatos soportados */}
       <p className="text-xs text-muted-foreground text-center">
-        Maximum file size: <span className="font-semibold">100MB</span>
+        Tamano maximo de archivo: <span className="font-semibold">100MB</span>
         <br />
-        Maximum duration: <span className="font-semibold">50 seconds</span>
+        Duracion maxima: <span className="font-semibold">50 segundos</span>
         <br />
-        Supported:{" "}
+        Compatible:{" "}
         <span className="font-semibold">
           MP4 (H.264/H.265), AVI, MOV, MKV, WEBM, MPEG, MPG
         </span>
@@ -52,7 +52,7 @@ export default function DropzoneContent({
         size="lg"
         className="mt-2 rounded-full px-6 py-2"
       >
-        {isUploading ? "Uploading..." : "Select file"}
+        {isUploading ? "Subiendo..." : "Seleccionar archivo"}
       </Button>
     </div>
   );

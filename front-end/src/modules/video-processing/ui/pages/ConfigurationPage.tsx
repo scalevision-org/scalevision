@@ -117,11 +117,11 @@ export const ConfigurationPage = () => {
     <div className="flex justify-center py-12 px-4">
       <div className="w-full max-w-xl">
         <h2 className="text-3xl font-black mb-2 text-text-light dark:text-text-dark">
-          Video Configuration
+          Configuracion de video
         </h2>
 
         <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
-          Turn widescreen videos into social-ready vertical formats.
+          Convierte videos panoramicos en formatos verticales listos para redes.
         </p>
 
         <div className="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-[#1F2A27] rounded-xl p-6 space-y-6">
@@ -143,6 +143,12 @@ export const ConfigurationPage = () => {
           ) : (
             <>
               <MethodSelector value={method} onChange={handleMethodChange} />
+              {mode === "FACE_TRACKING" && (
+                <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                  La duracion del video final puede acortarse segun el tiempo en
+                  pantalla del sujeto elegido.
+                </p>
+              )}
               <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
                 Si no detecta caras u objetos, el modelo usara un corte
                 centrado.
@@ -154,7 +160,7 @@ export const ConfigurationPage = () => {
               )}
               {!file && (
                 <div className="w-full rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
-                  Selecciona un video en la pagina de upload para continuar.
+                  Selecciona un video en la pagina de carga para continuar.
                 </div>
               )}
               <GenerateButton

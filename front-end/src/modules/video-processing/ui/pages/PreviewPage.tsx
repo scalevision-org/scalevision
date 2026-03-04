@@ -106,7 +106,7 @@ export const PreviewPage = () => {
       <div className="bg-white dark:bg-bg-dark  dark:border-white/5 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
-            Reframed Video Preview
+            Vista previa del video reencuadrado
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             Estado backend: {status ?? "sin estado"}
@@ -142,7 +142,7 @@ export const PreviewPage = () => {
           )}
           {!jobId && (
             <div className="mt-3 w-full max-w-xl rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
-              No se encontro el id del video. Vuelve a la pagina de upload.
+              No se encontro el id del video. Vuelve a la pagina de carga.
             </div>
           )}
         </div>
