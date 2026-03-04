@@ -1,5 +1,7 @@
 package com.scalevision.backend.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scalevision.backend.dto.CortarVideoRequest;
 import com.scalevision.backend.dto.CortarVideoResponse;
 import com.scalevision.backend.dto.EstadoVideoResponse;
@@ -39,12 +41,10 @@ public class VideoService {
 
     private final VideoRepository videoRepository;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     private final Path storageRoot;
     private final Path originalsDir;
-    private final Path finalsDir;
-    private final Path thumbnailsDir;
-
     private final String aiBaseUrl;
     private final String aiLocalProcessingDir;
 
@@ -56,18 +56,15 @@ public class VideoService {
     ) {
         this.videoRepository = videoRepository;
         this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
         this.aiBaseUrl = aiBaseUrl;
         this.aiLocalProcessingDir = aiLocalProcessingDir;
 
         this.storageRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
         this.originalsDir = storageRoot.resolve("originals");
-        this.finalsDir = storageRoot.resolve("finals");
-        this.thumbnailsDir = storageRoot.resolve("thumbnails");
         try {
             Files.createDirectories(this.storageRoot);
             Files.createDirectories(this.originalsDir);
-            Files.createDirectories(this.finalsDir);
-            Files.createDirectories(this.thumbnailsDir);
         } catch (IOException ex) {
             throw new IllegalStateException("No se pudo crear el directorio de uploads", ex);
         }
@@ -83,10 +80,13 @@ public class VideoService {
         if (videoFile == null || videoFile.isEmpty()) {
             throw new BadRequestException("Debe enviar un archivo de video");
         }
+
         ModoCorte modoCorte = ModoCorte.fromValue(modoCorteRaw);
 
         String originalName = videoFile.getOriginalFilename() == null ? "video.mp4" : videoFile.getOriginalFilename();
         String formatoArchivo = extraerExtension(originalName);
+        validarFormato(formatoArchivo);
+
         String nombreBase = limpiarNombreSinExtension(originalName);
         String formatoFinal = (formato == null || formato.isBlank()) ? formatoArchivo : formato.toLowerCase(Locale.ROOT);
         String nombreFinal = (nombre == null || nombre.isBlank()) ? nombreBase : nombre.trim();
@@ -114,9 +114,12 @@ public class VideoService {
         video.setActivo(true);
         video.setRutaArchivoLocal(destination.toString());
         video.setIaJobId(UUID.randomUUID().toString());
+        video.setIaErrorCode(null);
+        video.setError(null);
 
         VideoPoc saved = videoRepository.save(video);
         saved.setUrlVideoOriginal("http://localhost:8080/svmvp/uploads/originals/" + storedFileName);
+
         iniciarScanEnIa(saved);
         saved = videoRepository.save(saved);
 
@@ -146,20 +149,16 @@ public class VideoService {
     public EstadoVideoResponse obtenerEstado(Long id) {
         VideoPoc video = findVideoOrThrow(id);
         refrescarScanDesdeIa(video);
-        return new EstadoVideoResponse(video.getId(), video.getEstado().name(), video.getError());
+        return new EstadoVideoResponse(video.getId(), video.getEstado().name(), video.getIaErrorCode(), video.getError());
     }
 
     public MiniVistasResponse obtenerMiniVistas(Long id) {
         VideoPoc video = findVideoOrThrow(id);
-        Map<String, Object> scanBody = refrescarScanDesdeIa(video);
+        refrescarScanDesdeIa(video);
 
-        if (video.getEstado() != VideoStatus.PROCESADO && video.getEstado() != VideoStatus.CORTANDO
-                && video.getEstado() != VideoStatus.CORTADO) {
+        if (video.getEstado() != VideoStatus.PROCESADO && video.getEstado() != VideoStatus.CORTAR
+                && video.getEstado() != VideoStatus.CORTANDO && video.getEstado() != VideoStatus.CORTADO) {
             throw new BadRequestException("El video todavia no tiene mini-vistas disponibles");
-        }
-
-        if (scanBody != null) {
-            aplicarMiniVistasDesdeScan(video, scanBody);
         }
 
         return new MiniVistasResponse(
@@ -167,7 +166,10 @@ public class VideoService {
                 video.getEstado().name(),
                 video.getUrlMiniVista01(),
                 video.getUrlMiniVista02(),
-                video.getUrlMiniVista03()
+                video.getUrlMiniVista03(),
+                video.getFallbackActive(),
+                video.getFallbackStrategy(),
+                video.getFallbackReason()
         );
     }
 
@@ -176,23 +178,32 @@ public class VideoService {
         Map<String, Object> scanBody = refrescarScanDesdeIa(video);
 
         if (video.getEstado() != VideoStatus.PROCESADO) {
-            throw new BadRequestException("Solo se puede cortar un video en estado PROCESADO");
+            throw new BadRequestException("El estado del video debe ser PROCESADO para iniciar corte");
         }
 
         String strategy = video.getModoCorte();
         String targetSubjectId = null;
 
         if (ModoCorte.FACE_TRACKING.getValue().equals(strategy)) {
+            if (request.getUrlMiniVista() == null || request.getUrlMiniVista().isBlank()) {
+                throw new BadRequestException("Para face_tracking debes enviar urlMiniVista");
+            }
             targetSubjectId = encontrarTargetSubjectId(scanBody, request.getUrlMiniVista());
             if (targetSubjectId == null) {
-                throw new BadRequestException("No se encontro subject_id para la mini-vista seleccionada");
+                throw new BadRequestException("SUBJECT_NOT_FOUND: no existe el subject para la mini-vista elegida");
             }
         }
 
-        lanzarProcesoEnIa(video.getIaJobId(), strategy, targetSubjectId);
+        HttpStatus processStatus = lanzarProcesoEnIa(video.getIaJobId(), strategy, targetSubjectId);
 
         video.setUrlVistaSeleccionada(request.getUrlMiniVista());
-        video.setEstado(VideoStatus.CORTANDO);
+        if (processStatus == HttpStatus.CREATED) {
+            video.setEstado(VideoStatus.CORTAR);
+        } else {
+            video.setEstado(VideoStatus.CORTANDO);
+        }
+        video.setIaErrorCode(null);
+        video.setError(null);
         video.setFecha(LocalDateTime.now());
         videoRepository.save(video);
 
@@ -224,12 +235,14 @@ public class VideoService {
             );
             restTemplate.postForEntity(aiBaseUrl + "/scan", new HttpEntity<>(payload), Map.class);
             video.setEstado(VideoStatus.SUBIDO);
+            video.setIaErrorCode(null);
+            video.setError(null);
         } catch (HttpStatusCodeException ex) {
-            video.setEstado(VideoStatus.ERROR);
-            video.setError(extraerMensajeErrorIa(ex));
-            throw new BadRequestException("IA rechazo el escaneo: " + extraerMensajeErrorIa(ex));
+            aplicarErrorScan(video, ex);
+            throw new BadRequestException("IA rechazo el escaneo: " + video.getError());
         } catch (Exception ex) {
             video.setEstado(VideoStatus.ERROR);
+            video.setIaErrorCode("IA_CONNECTION_ERROR");
             video.setError("No se pudo conectar con IA en /scan");
             throw new IllegalStateException("No se pudo conectar con IA en /scan", ex);
         }
@@ -241,55 +254,60 @@ public class VideoService {
             ResponseEntity<Map> response = restTemplate.getForEntity(aiBaseUrl + "/scan/" + video.getIaJobId(), Map.class);
             Map<String, Object> body = response.getBody();
 
-            if (response.getStatusCode() == HttpStatus.OK) {
+            String status = body == null ? null : toUpperString(body.get("status"));
+            HttpStatus code = HttpStatus.valueOf(response.getStatusCode().value());
+
+            if (code == HttpStatus.ACCEPTED || "PROCESANDO".equals(status)) {
+                video.setEstado(VideoStatus.PROCESANDO);
+            } else if (code == HttpStatus.OK && "PROCESADO".equals(status)) {
                 video.setEstado(VideoStatus.PROCESADO);
-                video.setError(null);
                 aplicarMiniVistasDesdeScan(video, body);
+                aplicarFallbackDesdeScan(video, body);
+            } else if (code == HttpStatus.CREATED || "SUBIDO".equals(status)) {
+                video.setEstado(VideoStatus.SUBIDO);
             }
 
+            video.setIaErrorCode(null);
+            video.setError(null);
             videoRepository.save(video);
             return body;
         } catch (HttpStatusCodeException ex) {
-            int status = ex.getStatusCode().value();
-            if (status == 202) {
-                video.setEstado(VideoStatus.PROCESANDO);
-                video.setError(null);
-                videoRepository.save(video);
-                return null;
-            }
-
-            video.setEstado(VideoStatus.ERROR);
-            video.setError(extraerMensajeErrorIa(ex));
+            aplicarErrorScan(video, ex);
             videoRepository.save(video);
-            throw new BadRequestException("Error IA en scan: " + extraerMensajeErrorIa(ex));
+            return null;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void lanzarProcesoEnIa(String iaJobId, String strategy, String targetSubjectId) {
+    private HttpStatus lanzarProcesoEnIa(String iaJobId, String strategy, String targetSubjectId) {
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("id", iaJobId);
             payload.put("strategy", strategy);
             payload.put("target_subject_id", targetSubjectId);
-            restTemplate.postForEntity(aiBaseUrl + "/process-video", new HttpEntity<>(payload), Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(aiBaseUrl + "/process-video", new HttpEntity<>(payload), Map.class);
+            return HttpStatus.valueOf(response.getStatusCode().value());
         } catch (HttpStatusCodeException ex) {
-            throw new BadRequestException("IA rechazo process-video: " + extraerMensajeErrorIa(ex));
+            String msg = extraerMensajeErrorIa(ex).message;
+            throw new BadRequestException("IA rechazo process-video: " + msg);
         } catch (Exception ex) {
             throw new IllegalStateException("No se pudo conectar con IA en /process-video", ex);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void refrescarProcessDesdeIa(VideoPoc video) {
         try {
             ResponseEntity<Map> response = restTemplate.getForEntity(aiBaseUrl + "/process-video/" + video.getIaJobId(), Map.class);
             Map<String, Object> body = response.getBody();
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                video.setEstado(VideoStatus.CORTADO);
-                video.setError(null);
+            String status = body == null ? null : toUpperString(body.get("status"));
+            int code = response.getStatusCode().value();
 
+            if (code == 201 || "CORTAR".equals(status) || "RECIBIDO".equals(status)) {
+                video.setEstado(VideoStatus.CORTAR);
+            } else if (code == 202 || "CORTANDO".equals(status)) {
+                video.setEstado(VideoStatus.CORTANDO);
+            } else if (code == 200 && ("RENDER_COMPLETED".equals(status) || "CORTADO".equals(status))) {
+                video.setEstado(VideoStatus.CORTADO);
                 String outputVideoUrl = extraerOutputVideoUrl(body);
                 if (outputVideoUrl == null || outputVideoUrl.isBlank()) {
                     throw new BadRequestException("IA no devolvio output_video_url");
@@ -297,20 +315,15 @@ public class VideoService {
                 video.setUrlVideoOriginalCortado(outputVideoUrl);
             }
 
+            video.setIaErrorCode(null);
+            video.setError(null);
             videoRepository.save(video);
         } catch (HttpStatusCodeException ex) {
-            int status = ex.getStatusCode().value();
-            if (status == 202) {
-                video.setEstado(VideoStatus.CORTANDO);
-                video.setError(null);
-                videoRepository.save(video);
-                return;
-            }
-
+            AiError aiError = extraerMensajeErrorIa(ex);
             video.setEstado(VideoStatus.ERROR);
-            video.setError(extraerMensajeErrorIa(ex));
+            video.setIaErrorCode(aiError.code);
+            video.setError(aiError.message);
             videoRepository.save(video);
-            throw new BadRequestException("Error IA en process-video: " + extraerMensajeErrorIa(ex));
         }
     }
 
@@ -320,7 +333,7 @@ public class VideoService {
             return;
         }
         Object subjectsObj = scanBody.get("subjects");
-        if (!(subjectsObj instanceof List<?> subjects) || subjects.isEmpty()) {
+        if (!(subjectsObj instanceof List<?> subjects)) {
             return;
         }
 
@@ -351,6 +364,27 @@ public class VideoService {
         video.setUrlMiniVista01(mini1);
         video.setUrlMiniVista02(mini2);
         video.setUrlMiniVista03(mini3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void aplicarFallbackDesdeScan(VideoPoc video, Map<String, Object> scanBody) {
+        Object fallbackObj = scanBody.get("fallback");
+        if (!(fallbackObj instanceof Map<?, ?> raw)) {
+            return;
+        }
+
+        Map<String, Object> fallback = (Map<String, Object>) raw;
+        boolean active = Boolean.TRUE.equals(fallback.get("is_active"));
+        String strategy = fallback.get("strategy") == null ? null : fallback.get("strategy").toString();
+        String reason = fallback.get("reason") == null ? null : fallback.get("reason").toString();
+
+        video.setFallbackActive(active);
+        video.setFallbackStrategy(strategy);
+        video.setFallbackReason(reason);
+
+        if (active && strategy != null && strategy.toUpperCase(Locale.ROOT).contains("CENTER_CROP")) {
+            video.setModoCorte(ModoCorte.CENTER_CROP.getValue());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -411,12 +445,36 @@ public class VideoService {
         return null;
     }
 
-    private String extraerMensajeErrorIa(HttpStatusCodeException ex) {
+    private void aplicarErrorScan(VideoPoc video, HttpStatusCodeException ex) {
+        AiError aiError = extraerMensajeErrorIa(ex);
+        video.setEstado(VideoStatus.ERROR);
+        video.setIaErrorCode(aiError.code);
+        video.setError(aiError.message);
+    }
+
+    private AiError extraerMensajeErrorIa(HttpStatusCodeException ex) {
+        int status = ex.getStatusCode().value();
         String body = ex.getResponseBodyAsString();
+
         if (body == null || body.isBlank()) {
-            return "status=" + ex.getStatusCode().value();
+            return new AiError("HTTP_" + status, "Error IA status " + status);
         }
-        return body;
+
+        try {
+            Map<String, Object> json = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+            if (json.get("detail") instanceof Map<?, ?> rawDetail) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> detail = (Map<String, Object>) rawDetail;
+                String code = detail.get("error_code") == null ? "HTTP_" + status : detail.get("error_code").toString();
+                String message = detail.get("message") == null ? body : detail.get("message").toString();
+                return new AiError(code, message);
+            }
+            String code = json.get("error_code") == null ? "HTTP_" + status : json.get("error_code").toString();
+            String message = json.get("message") == null ? body : json.get("message").toString();
+            return new AiError(code, message);
+        } catch (Exception ignored) {
+            return new AiError("HTTP_" + status, body);
+        }
     }
 
     private void replicarArchivoParaIa(String fileName, Path source) throws IOException {
@@ -448,5 +506,22 @@ public class VideoService {
 
     private double convertirAMegaBytes(long bytes) {
         return Math.round((bytes / (1024.0 * 1024.0)) * 100.0) / 100.0;
+    }
+
+    private void validarFormato(String ext) {
+        String lower = ext.toLowerCase(Locale.ROOT);
+        if (!lower.equals("mp4") && !lower.equals("mpg") && !lower.equals("mpeg")) {
+            throw new BadRequestException("INVALID_FORMAT: Formato no soportado (Solo MP4, MPG, MPEG)");
+        }
+    }
+
+    private String toUpperString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        return value.toString().trim().toUpperCase(Locale.ROOT);
+    }
+
+    private record AiError(String code, String message) {
     }
 }

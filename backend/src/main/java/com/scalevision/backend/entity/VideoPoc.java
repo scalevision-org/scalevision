@@ -41,6 +41,9 @@ public class VideoPoc {
     @Column(nullable = false)
     private VideoStatus estado;
 
+    @Column(name = "ia_error_code")
+    private String iaErrorCode;
+
     private String error;
 
     @Column(nullable = false)
@@ -72,6 +75,15 @@ public class VideoPoc {
 
     @Column(name = "url_video_original_cortado")
     private String urlVideoOriginalCortado;
+
+    @Column(name = "fallback_active")
+    private Boolean fallbackActive;
+
+    @Column(name = "fallback_strategy")
+    private String fallbackStrategy;
+
+    @Column(name = "fallback_reason")
+    private String fallbackReason;
 
     @Column(nullable = false)
     private Boolean activo;
@@ -158,6 +170,14 @@ public class VideoPoc {
         this.error = error;
     }
 
+    public String getIaErrorCode() {
+        return iaErrorCode;
+    }
+
+    public void setIaErrorCode(String iaErrorCode) {
+        this.iaErrorCode = iaErrorCode;
+    }
+
     public LocalDateTime getFecha() {
         return fecha;
     }
@@ -236,6 +256,30 @@ public class VideoPoc {
 
     public void setUrlVideoOriginalCortado(String urlVideoOriginalCortado) {
         this.urlVideoOriginalCortado = urlVideoOriginalCortado;
+    }
+
+    public Boolean getFallbackActive() {
+        return fallbackActive;
+    }
+
+    public void setFallbackActive(Boolean fallbackActive) {
+        this.fallbackActive = fallbackActive;
+    }
+
+    public String getFallbackStrategy() {
+        return fallbackStrategy;
+    }
+
+    public void setFallbackStrategy(String fallbackStrategy) {
+        this.fallbackStrategy = fallbackStrategy;
+    }
+
+    public String getFallbackReason() {
+        return fallbackReason;
+    }
+
+    public void setFallbackReason(String fallbackReason) {
+        this.fallbackReason = fallbackReason;
     }
 
     public Boolean getActivo() {
