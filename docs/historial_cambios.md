@@ -31,7 +31,7 @@ Para absorber los fallos inherentes de cualquier IA de rastreo durante cruces r�
 * **Ahora:** Captura limpia de los 3 protagonistas principales con miniaturas generadas en su punto de máxima exposición (Mayor Área + 20% Padding). Sincronización de audio y recorte dinámico ejecutados con éxito.
 
 
-## Histórico de Pruebas de Humo y Arquitectura (02/Mar/2026)
+## Histórico de Pruebas de Humo y Arquitectura (02/Mar/2026) laura Dominguez
 
 Este log documenta la evolución del motor de IA hasta alcanzar el grado de producción para el MVP:
 
@@ -58,3 +58,18 @@ Este log documenta la evolución del motor de IA hasta alcanzar el grado de prod
    * **Objetivo:** Detectar sujetos bajo interferencia severa (Danza Folclórica).
    * **Incidencia:** Detección de falsos positivos (Público en primera fila) y pérdida de ID de las bailarinas por cruce de faldas.
    * **Resolución:** Implementación de Heurística de Escenario (ignorar rostros debajo del 55% de la pantalla) y reducción de la Regla de Negocio a un 40% de aparición para tolerar cortes de *ByteTrack*. Éxito confirmado.
+
+## Histórico de Pruebas de Humo y Arquitectura (03/Mar/2026) Laura Dominguez
+
+6. **Validación de Integridad de Video (Metadatos Corruptos)** * **Objetivo:** Ejecutar salto temporal (`-ss`) en videos grabados con cortes abruptos.
+   * **Incidencia:** Fallo de FFmpeg al intentar saltar en el tiempo porque el encabezado del archivo original (`video_personas.mp4`) reportaba `Duration: 0 s`.
+   * **Resolución:** Implementación de reconstrucción de video pre-procesamiento para recalcular índices de tiempo físicos reales.
+
+7. **Validación de Sincronización Temporal Estricta (VFR vs CFR)** * **Objetivo:** Alinear los cálculos matemáticos de OpenCV (frames) con el reloj absoluto de FFmpeg (segundos).
+   * **Incidencia:** Desfase del encuadre temporal debido a que el video fuente usaba Variable Frame Rate (VFR) de un dispositivo móvil (29.86 fps fluctuantes).
+   * **Resolución:** Establecimiento de protocolo de Sanitización a Constant Frame Rate (CFR forzado a 30 fps) en la ingesta del archivo.
+
+8. **Validación de Tiempo Muerto y "Cámara Fantasma" (Edge Heuristics)**
+   * **Objetivo:** Iniciar el video exactamente cuando el protagonista es el foco de la acción, ignorando su presencia en el fondo.
+   * **Incidencia:** El rastreador detectaba al sujeto en el frame 0, pero solo mostraba un hombro en el borde o estaba a 50 metros de distancia, generando segundos de tiempo muerto visual.
+   * **Resolución:** Inyección de *Heurística de Bordes* (ignorar detecciones a < 10px de los márgenes) y *Regla de Relevancia Espacial* (el sujeto debe alcanzar el 50% de su área máxima para gatillar el `start_frame`).
