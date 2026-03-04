@@ -34,6 +34,9 @@ public class VideoPoc {
     @Column(nullable = false)
     private Integer duracion;
 
+    @Column(name = "modo_corte", nullable = false)
+    private String modoCorte;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VideoStatus estado;
@@ -126,6 +129,14 @@ public class VideoPoc {
 
     public void setDuracion(Integer duracion) {
         this.duracion = duracion;
+    }
+
+    public String getModoCorte() {
+        return modoCorte;
+    }
+
+    public void setModoCorte(String modoCorte) {
+        this.modoCorte = modoCorte;
     }
 
     public VideoStatus getEstado() {

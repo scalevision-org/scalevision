@@ -57,6 +57,7 @@ Lista rapida (URL completa):
 ## Flujo (polling)
 
 1. FE llama `POST http://localhost:8080/svmvp/videos/subir` (multipart/form-data con archivo).
+Campo multipart esperado: `file` + `modo_corte` (`face_tracking` o `center_crop`).
 2. FE hace polling a `GET http://localhost:8080/svmvp/videos/estado/{id}` cada 3-5s.
 3. Cuando llega a `PROCESADO`, FE consulta `GET http://localhost:8080/svmvp/videos/mini-vistas/{id}`.
 4. FE envía mini-vista elegida con `POST http://localhost:8080/svmvp/videos/cortar-video/{id}`.

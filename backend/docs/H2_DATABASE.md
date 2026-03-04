@@ -11,6 +11,7 @@ erDiagram
         DOUBLE tamano
         VARCHAR formato
         INT duracion
+        VARCHAR modo_corte
         VARCHAR estado
         VARCHAR error
         DATETIME fecha

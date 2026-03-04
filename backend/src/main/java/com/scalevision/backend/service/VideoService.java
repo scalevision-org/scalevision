@@ -7,6 +7,7 @@ import com.scalevision.backend.dto.MiniVistasResponse;
 import com.scalevision.backend.dto.UploadVideoRequest;
 import com.scalevision.backend.dto.UploadVideoResponse;
 import com.scalevision.backend.dto.VideoFinalResponse;
+import com.scalevision.backend.entity.ModoCorte;
 import com.scalevision.backend.entity.VideoPoc;
 import com.scalevision.backend.entity.VideoStatus;
 import com.scalevision.backend.exception.BadRequestException;
@@ -61,6 +62,7 @@ public class VideoService {
         video.setTamano(request.getTamano() == null ? 50.0 : request.getTamano());
         video.setFormato(request.getFormato() == null ? "mp4" : request.getFormato());
         video.setDuracion(request.getDuracion() == null ? 60 : request.getDuracion());
+        video.setModoCorte(ModoCorte.CENTER_CROP.getValue());
         video.setEstado(VideoStatus.SUBIDO);
         video.setFecha(LocalDateTime.now());
         video.setActivo(true);
@@ -72,10 +74,11 @@ public class VideoService {
         return new UploadVideoResponse(saved.getId(), saved.getUrlVideoOriginal(), saved.getEstado().name());
     }
 
-    public UploadVideoResponse subirVideoArchivo(MultipartFile videoFile, String nickname, Integer duracion) {
+    public UploadVideoResponse subirVideoArchivo(MultipartFile videoFile, String modoCorteRaw) {
         if (videoFile == null || videoFile.isEmpty()) {
             throw new BadRequestException("Debe enviar un archivo de video");
         }
+        ModoCorte modoCorte = ModoCorte.fromValue(modoCorteRaw);
 
         String originalName = videoFile.getOriginalFilename() == null ? "video.mp4" : videoFile.getOriginalFilename();
         String formato = extraerExtension(originalName);
@@ -91,10 +94,11 @@ public class VideoService {
 
         VideoPoc video = new VideoPoc();
         video.setNombre(nombreBase);
-        video.setNickname(nickname);
+        video.setNickname(null);
         video.setTamano(convertirAMegaBytes(videoFile.getSize()));
         video.setFormato(formato);
-        video.setDuracion(duracion == null ? 60 : duracion);
+        video.setDuracion(60);
+        video.setModoCorte(modoCorte.getValue());
         video.setEstado(VideoStatus.SUBIDO);
         video.setFecha(LocalDateTime.now());
         video.setActivo(true);

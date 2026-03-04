@@ -38,11 +38,10 @@ public class VideoController {
 
     @PostMapping(value = "/subir", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UploadVideoResponse> subirVideoArchivo(
-            @RequestParam("video") MultipartFile video,
-            @RequestParam(value = "nickname", required = false) String nickname,
-            @RequestParam(value = "duracion", required = false) Integer duracion
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("modo_corte") String modoCorte
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideoArchivo(video, nickname, duracion));
+        return ResponseEntity.status(HttpStatus.CREATED).body(videoService.subirVideoArchivo(file, modoCorte));
     }
 
     @GetMapping("/estado/{id}")
