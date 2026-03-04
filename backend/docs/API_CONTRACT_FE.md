@@ -14,13 +14,24 @@ Request (`multipart/form-data`):
 - `modo_corte`: texto obligatorio con valores:
   - `face_tracking`
   - `center_crop`
+- `nombre`: texto opcional
+- `tamano`: numero decimal opcional
+- `formato`: texto opcional (ejemplo: `MP4`)
+
+Campos eliminados del contrato:
+
+- `nickname`
+- `duracion`
 
 Ejemplo terminal:
 
 ```bash
 curl -X POST "http://localhost:8080/svmvp/videos/subir" \
   -F "file=@/ruta/demo.mp4" \
-  -F "modo_corte=face_tracking"
+  -F "modo_corte=face_tracking" \
+  -F "nombre=video_demo_scalevision" \
+  -F "tamano=15.7" \
+  -F "formato=MP4"
 ```
 
 Response `201`:
