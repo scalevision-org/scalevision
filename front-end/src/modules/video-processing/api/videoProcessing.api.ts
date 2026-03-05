@@ -51,9 +51,12 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const buildThumbnails = (id: number): VideoThumbnailsResponseDto => ({
   id,
-  url_mini_vista_01: "https://n9.cl/f5txu",
-  url_mini_vista_02: "https://n9.cl/brvld",
-  url_mini_vista_03: "https://n9.cl/b0h5t",
+  url_mini_vista_01:
+    "https://res.cloudinary.com/dnvlb7ajh/image/upload/v1772664411/poli_r9ig6o.jpg",
+  url_mini_vista_02:
+    "https://res.cloudinary.com/dnvlb7ajh/image/upload/v1772664480/Trenzas_nammec.jpg",
+  url_mini_vista_03:
+    "https://res.cloudinary.com/dnvlb7ajh/image/upload/v1772665189/playera_rosa_jaacfk.jpg",
 });
 
 const buildFinalUrl = (id: number) =>
@@ -168,11 +171,14 @@ export async function cutVideo(
   }
 
   if (payload.mini_vista_id === "mini_01") {
-    entry.finalUrl = "https://www.youtube.com/shorts/b8vKTrzKwg4";
+    entry.finalUrl =
+      "https://res.cloudinary.com/dnvlb7ajh/video/upload/v1772668433/poli9_16_kjds9f.mp4";
   } else if (payload.mini_vista_id === "mini_02") {
-    entry.finalUrl = "https://www.youtube.com/shorts/pnmkeJc9c1c";
+    entry.finalUrl =
+      "https://res.cloudinary.com/dnvlb7ajh/video/upload/v1772668388/Trenza916_w2tyid.mp4";
   } else if (payload.mini_vista_id === "mini_03") {
-    entry.finalUrl = "https://www.youtube.com/shorts/cu0QGh2w72k";
+    entry.finalUrl =
+      "https://res.cloudinary.com/dnvlb7ajh/video/upload/v1772668462/playerarosa9_16_inyzxq.mp4";
   }
 
   entry.cutRequested = true;
@@ -200,7 +206,8 @@ export async function getFinalVideo(
   }
 
   if (entry.mode === "CENTER_CROP") {
-    entry.finalUrl = "https://www.youtube.com/shorts/b8vKTrzKwg4";
+    entry.finalUrl =
+      "https://res.cloudinary.com/dnvlb7ajh/video/upload/v1772668433/poli9_16_kjds9f.mp4";
   }
 
   return { id: entry.id, url_video_final: entry.finalUrl };

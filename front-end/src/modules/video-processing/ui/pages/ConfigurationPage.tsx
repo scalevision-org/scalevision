@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MethodSelector } from "../components/MethodSelector";
 import { GenerateButton } from "../components/GenerateButton";
@@ -25,15 +25,9 @@ export const ConfigurationPage = () => {
     error: uploadError,
     clearError,
   } = useUploadFlow();
-  const {
-    mode,
-    setMode,
-    setVideoId,
-    mockScenario,
-    setMockScenario,
-    uploadProgress,
-    setUploadProgress,
-  } = useVideoProcessStore();
+  const { mode, setMode, setVideoId, uploadProgress, setUploadProgress } =
+    useVideoProcessStore();
+  const progressTimerRef = useRef<number | null>(null);
 
   const state = location.state as ConfigurationState | null;
   const file = state?.file;
@@ -45,6 +39,37 @@ export const ConfigurationPage = () => {
 
   const uploadMode = useMemo<UploadMode>(() => mode, [mode]);
 
+  const clearProgressTimer = () => {
+    if (progressTimerRef.current !== null) {
+      window.clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+  };
+
+  const startMockProgress = (sizeBytes: number) => {
+    clearProgressTimer();
+    setUploadProgress(0);
+
+    if (sizeBytes <= 0) {
+      return;
+    }
+
+    const totalBytes = sizeBytes;
+    const stepBytes = Math.max(totalBytes / 20, 512 * 1024);
+    let uploadedBytes = 0;
+
+    progressTimerRef.current = window.setInterval(() => {
+      uploadedBytes += stepBytes;
+      const rawPercent = Math.round((uploadedBytes / totalBytes) * 100);
+      const cappedPercent = Math.min(95, Math.max(0, rawPercent));
+      setUploadProgress(cappedPercent);
+
+      if (cappedPercent >= 95) {
+        clearProgressTimer();
+      }
+    }, 200);
+  };
+
   const handleMethodChange = (value: ReframingMethod) => {
     setMode(value === "smart" ? "FACE_TRACKING" : "CENTER_CROP");
   };
@@ -55,6 +80,7 @@ export const ConfigurationPage = () => {
     }
 
     clearError();
+    startMockProgress(file.size);
 
     const result = await submitUpload({
       file,
@@ -62,11 +88,14 @@ export const ConfigurationPage = () => {
     });
 
     if (!result) {
+      clearProgressTimer();
+      setUploadProgress(0);
       return;
     }
 
     setVideoId(Number(result.jobId));
     setUploadProgress(100);
+    clearProgressTimer();
 
     navigate("/preview", {
       state: {
@@ -76,90 +105,70 @@ export const ConfigurationPage = () => {
     });
   };
 
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current !== null) {
+        window.clearInterval(progressTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="flex justify-center py-12 px-4">
       <div className="w-full max-w-xl">
         <h2 className="text-3xl font-black mb-2 text-text-light dark:text-text-dark">
-          Video Configuration
+          Configuracion de video
         </h2>
 
         <p className="text-text-muted-light dark:text-text-muted-dark mb-6">
-          Turn widescreen videos into social-ready vertical formats.
+          Convierte videos panoramicos en formatos verticales listos para redes.
         </p>
 
-        <div
-          className="bg-surface-light dark:bg-surface-dark 
-                        border border-slate-200 dark:border-[#1F2A27] 
-                        rounded-xl p-6 space-y-6"
-        >
-          <MethodSelector value={method} onChange={handleMethodChange} />
-          <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
-            Si no detecta caras u objetos, el modelo usara un corte centrado.
-          </p>
-          <div className="rounded-xl border border-slate-200/60 dark:border-white/10 bg-muted/40 dark:bg-surface-dark/40 p-4 space-y-3">
-            <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
-              <span className="font-semibold">Simulacion:</span> {mockScenario}
+        <div className="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-[#1F2A27] rounded-xl p-6 space-y-6">
+          {isUploading ? (
+            <div className="flex flex-col items-center justify-center gap-6 py-10">
+              <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+              <div className="w-full max-w-md space-y-2">
+                <div className="text-xs text-text-muted-light dark:text-text-muted-dark text-center">
+                  Subiendo: {uploadProgress}%
+                </div>
+                <div className="h-2 w-full rounded-full bg-slate-200/70 dark:bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMockScenario("CENTER_CROP")}
-              >
-                Center Crop OK
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMockScenario("FACE_TRACKING")}
-              >
-                Face Tracking OK
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMockScenario("ERROR", "UPLOAD")}
-              >
-                Error en subida
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMockScenario("ERROR", "PROCESANDO")}
-              >
-                Error en proceso
-              </Button>
-            </div>
-            <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
-              Progreso upload (mock): {uploadProgress}%
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[0, 25, 50, 75, 100].map((value) => (
-                <Button
-                  key={value}
-                  type="button"
-                  variant="outline"
-                  onClick={() => setUploadProgress(value)}
-                >
-                  {value}%
-                </Button>
-              ))}
-            </div>
-          </div>
-          {uploadError && (
-            <div className="w-full rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {uploadError}
-            </div>
+          ) : (
+            <>
+              <MethodSelector value={method} onChange={handleMethodChange} />
+              {mode === "FACE_TRACKING" && (
+                <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                  La duracion del video final puede acortarse segun el tiempo en
+                  pantalla del sujeto elegido.
+                </p>
+              )}
+              <p className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                Si no detecta caras u objetos, el modelo usara un corte
+                centrado.
+              </p>
+              {uploadError && (
+                <div className="w-full rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  {uploadError}
+                </div>
+              )}
+              {!file && (
+                <div className="w-full rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
+                  Selecciona un video en la pagina de carga para continuar.
+                </div>
+              )}
+              <GenerateButton
+                onGenerate={handleGenerate}
+                disabled={isUploading || !file}
+              />
+            </>
           )}
-          {!file && (
-            <div className="w-full rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
-              Selecciona un video en la pagina de upload para continuar.
-            </div>
-          )}
-          <GenerateButton
-            onGenerate={handleGenerate}
-            disabled={isUploading || !file}
-          />
         </div>
       </div>
     </div>

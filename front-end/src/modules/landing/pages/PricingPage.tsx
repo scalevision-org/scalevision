@@ -3,46 +3,46 @@ import React from "react"
 export function PricingPage() {
   const plans = [
     {
-      name: "Starter",
+      name: "Inicial",
       price: "$29",
-      period: "/month",
-      description: "Perfect for getting started",
+      period: "/mes",
+      description: "Perfecto para comenzar",
       features: [
-        "Up to 10 videos per month",
-        "1080p resolution",
-        "Basic reframing methods",
-        "Email support",
+        "Hasta 10 videos por mes",
+        "Resolucion 1080p",
+        "Metodos basicos de reencuadre",
+        "Soporte por email",
       ],
     },
     {
-      name: "Professional",
+      name: "Profesional",
       price: "$79",
-      period: "/month",
-      description: "For content creators",
+      period: "/mes",
+      description: "Para creadores de contenido",
       popular: true,
       features: [
-        "Unlimited videos",
-        "4K resolution",
-        "All reframing methods",
-        "Priority support",
-        "API access",
-        "Analytics dashboard",
+        "Videos ilimitados",
+        "Resolucion 4K",
+        "Todos los metodos de reencuadre",
+        "Soporte prioritario",
+        "Acceso a la API",
+        "Panel de analitica",
       ],
     },
     {
-      name: "Enterprise",
-      price: "Custom",
+      name: "Empresarial",
+      price: "Personalizado",
       period: "",
-      description: "For large teams",
+      description: "Para equipos grandes",
       features: [
-        "Dedicated support",
-        "Custom integrations",
-        "Volume licensing",
-        "On-premise option",
-        "SLA guarantee",
+        "Soporte dedicado",
+        "Integraciones a medida",
+        "Licencias por volumen",
+        "Opcion on-premise",
+        "Garantia de SLA",
       ],
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen py-24 px-4">
@@ -50,10 +50,11 @@ export function PricingPage() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-black mb-4 text-text-light dark:text-text-dark">
-            Simple, Transparent Pricing
+            Precios simples y transparentes
           </h1>
           <p className="text-xl text-text-muted-light dark:text-text-muted-dark max-w-2xl mx-auto">
-            Choose the plan that fits your needs. Scale up or down anytime.
+            Elige el plan que se adapte a tus necesidades. Escala cuando
+            quieras.
           </p>
         </div>
 
@@ -71,7 +72,7 @@ export function PricingPage() {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-bold">
-                    Most Popular
+                    Mas popular
                   </span>
                 </div>
               )}
@@ -99,7 +100,7 @@ export function PricingPage() {
                     : "border-2 border-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
                 }`}
               >
-                Get Started
+                Comenzar
               </button>
 
               <div className="space-y-4">
@@ -108,7 +109,9 @@ export function PricingPage() {
                     <div className="w-5 h-5 rounded-full bg-primary/20 dark:bg-primary/30 flex items-center justify-center mt-0.5 flex-shrink-0">
                       <div className="w-2 h-2 bg-primary rounded-full" />
                     </div>
-                    <span className="text-text-light dark:text-text-dark">{feature}</span>
+                    <span className="text-text-light dark:text-text-dark">
+                      {feature}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -119,22 +122,22 @@ export function PricingPage() {
         {/* FAQ Section */}
         <div className="mt-24 max-w-2xl mx-auto">
           <h2 className="text-3xl font-black mb-12 text-center text-text-light dark:text-text-dark">
-            Frequently Asked Questions
+            Preguntas frecuentes
           </h2>
 
           <div className="space-y-6">
             {[
               {
-                q: "Can I cancel anytime?",
-                a: "Yes, you can cancel your subscription anytime without any penalties.",
+                q: "Puedo cancelar cuando quiera?",
+                a: "Si, puedes cancelar tu suscripcion cuando quieras sin penalidades.",
               },
               {
-                q: "Do you offer discounts for annual billing?",
-                a: "Yes, save 20% when you choose annual billing instead of monthly.",
+                q: "Ofrecen descuentos por pago anual?",
+                a: "Si, ahorra 20% al elegir facturacion anual en lugar de mensual.",
               },
               {
-                q: "Is there a free trial?",
-                a: "Absolutely! Try ScaleVision free for 14 days with full access to all features.",
+                q: "Hay una prueba gratis?",
+                a: "Si! Prueba ScaleVision gratis por 14 dias con acceso completo.",
               },
             ].map((item, idx) => (
               <details
@@ -156,5 +159,5 @@ export function PricingPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

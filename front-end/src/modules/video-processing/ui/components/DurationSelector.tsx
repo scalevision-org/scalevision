@@ -18,9 +18,11 @@ export const DurationSelector = ({ value, onChange }: DurationSelectorProps) => 
 
   return (
     <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-      <h4 className="text-lg font-bold text-text-light dark:text-text-dark">Short Duration</h4>
+      <h4 className="text-lg font-bold text-text-light dark:text-text-dark">
+        Duracion corta
+      </h4>
       <p className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
-        Select the maximum duration for generated clips
+        Selecciona la duracion maxima para los clips generados
       </p>
       <div className="flex flex-wrap gap-3 mt-4">
         {options.map((option) => (
@@ -39,5 +41,5 @@ export const DurationSelector = ({ value, onChange }: DurationSelectorProps) => 
         ))}
       </div>
     </div>
-  )
+  );
 }

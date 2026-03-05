@@ -8,14 +8,18 @@ export function AppHeader() {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { label: "Pricing", href: "/pricing" },
-    { label: "Features", href: "/features" },
+    { label: "Precios", href: "/pricing" },
+    { label: "Caracteristicas", href: "/features" },
   ];
 
   return (
     <header className="w-full border-b border-slate-200 dark:border-[#1F2A27] bg-surface-light dark:bg-surface-dark transition-colors">
       <div className="max-w-7xl mx-auto px-6 lg:px-16 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 z-50" onClick={() => setIsOpen(false)}>
+        <Link
+          to="/"
+          className="flex items-center gap-2 z-50"
+          onClick={() => setIsOpen(false)}
+        >
           <Logo />
           <span className="font-bold text-lg tracking-tight text-text-light dark:text-text-dark">
             ScaleVision
@@ -36,7 +40,7 @@ export function AppHeader() {
 
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Button size="sm">Sign In</Button>
+          <Button size="sm">Iniciar sesion</Button>
         </div>
 
         <div className="md:hidden flex items-center gap-3">
@@ -44,7 +48,7 @@ export function AppHeader() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-            aria-label="Toggle menu"
+            aria-label="Alternar menu"
           >
             <svg
               className="w-6 h-6 text-text-light dark:text-text-dark transition-transform"
@@ -87,7 +91,7 @@ export function AppHeader() {
             ))}
             <div className="pt-4 border-t border-slate-200 dark:border-[#1F2A27]">
               <Button size="sm" className="w-full">
-                Sign In
+                Iniciar sesion
               </Button>
             </div>
           </div>

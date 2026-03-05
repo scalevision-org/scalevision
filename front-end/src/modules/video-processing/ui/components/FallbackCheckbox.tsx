@@ -27,13 +27,13 @@ export const FallbackCheckbox = ({ value, onChange }: FallbackCheckboxProps) => 
 
         <div className="flex-1">
           <p className="text-sm font-semibold text-text-light dark:text-text-dark">
-            Enable fallback logic
+            Habilitar logica de respaldo
           </p>
           <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">
-            Switch to center crop if no subject is detected.
+            Cambia a corte centrado si no se detecta un sujeto.
           </p>
         </div>
       </label>
     </div>
-  )
+  );
 }

@@ -119,10 +119,10 @@ export default function UploadPage() {
       )}
       <div className="flex flex-col gap-5">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
-          Convert to Vertical
+          Convertir a vertical
         </h1>
         <span className="text-lg text-muted-foreground max-w-xl">
-          Transform your horizontal clips into viral shorts in seconds
+          Transforma tus clips horizontales en shorts virales en segundos
         </span>
       </div>
       <UploadDropzone

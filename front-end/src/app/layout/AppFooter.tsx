@@ -11,13 +11,13 @@ export function AppFooter() {
 
         <div className="flex gap-8">
           <a href="#privacy" className="hover:text-primary transition-colors">
-            Privacy
+            Privacidad
           </a>
           <a href="#terms" className="hover:text-primary transition-colors">
-            Terms
+            Terminos
           </a>
           <a href="#contact" className="hover:text-primary transition-colors">
-            Contact
+            Contacto
           </a>
         </div>
       </div>

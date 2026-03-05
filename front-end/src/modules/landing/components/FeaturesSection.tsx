@@ -5,38 +5,36 @@ import React from "react"
 const features = [
   {
     icon: ScanFace,
-    title: "AI Face Tracking",
+    title: "Seguimiento facial con IA",
     description:
-      "Keep the subject perfectly centered automatically, no matter how much they move.",
+      "Mantiene al sujeto perfectamente centrado de forma automatica, sin importar cuanto se mueva.",
   },
   {
     icon: Highlighter,
-    title: "4K Export",
+    title: "Exportacion en 4K",
     description:
-      "Maintain crystal clear high resolution for all social platforms with no loss in quality.",
+      "Conserva una alta resolucion nitida para todas las plataformas sin perdida de calidad.",
   },
   {
     icon: Send,
-    title: "One-Click Sharing",
+    title: "Compartir en un clic",
     description:
-      "Push your reframed clips directly to TikTok, Reels, and YouTube Shorts.",
+      "Publica tus clips reencuadrados directo en TikTok, Reels y YouTube Shorts.",
   },
-]
+];
 
 export const FeaturesSection = () => {
   return (
-    <section
-      id="features"
-      className=" w-full max-w-3xl px-6 py-16 lg:py-24"
-    >
+    <section id="features" className=" w-full max-w-3xl px-6 py-16 lg:py-24">
       <div className="flex flex-col gap-12">
         <div className="flex flex-col gap-4 text-center lg:text-left">
           <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-            Effortless Conversion
+            Conversion sin esfuerzo
           </h2>
 
           <p className="text-lg text-muted-foreground max-w-[720px]">
-            Powering the next generation of content creators with smart automation that saves hours of manual editing.
+            Potenciamos a la proxima generacion de creadores con automatizacion
+            inteligente que ahorra horas de edicion manual.
           </p>
         </div>
 
@@ -52,5 +50,5 @@ export const FeaturesSection = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};

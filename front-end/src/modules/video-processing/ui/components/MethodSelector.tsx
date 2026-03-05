@@ -22,10 +22,10 @@ export const MethodSelector = ({
     <div className="space-y-4">
       <div>
         <h2 className="text-xl font-bold text-text-light dark:text-text-dark">
-          Reframing Method
+          Metodo de reencuadre
         </h2>
         <p className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
-          Choose how the AI should position the frame.
+          Elige como la IA debe posicionar el encuadre.
         </p>
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -59,7 +59,7 @@ export const MethodSelector = ({
                     : "text-text-muted-light dark:text-text-muted-dark"
                 }`}
               >
-                Center Crop
+                Corte centrado
               </p>
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -75,7 +75,7 @@ export const MethodSelector = ({
             </div>
 
             <p className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
-              Keeps the center fixed
+              Mantiene el centro fijo
             </p>
           </button>
 
@@ -102,7 +102,7 @@ export const MethodSelector = ({
                     selectedMethod === "smart" ? "bg-primary" : "bg-slate-500"
                   }`}
                 >
-                  TRACKING
+                  SEGUIMIENTO
                 </div>
               </div>
             </div>
@@ -115,7 +115,7 @@ export const MethodSelector = ({
                     : "text-text-muted-light dark:text-text-muted-dark"
                 }`}
               >
-                Face Tracking
+                Seguimiento facial
               </p>
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -131,7 +131,7 @@ export const MethodSelector = ({
             </div>
 
             <p className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
-              AI tracks moving subjects
+              La IA sigue sujetos en movimiento
             </p>
           </button>
         </div>
