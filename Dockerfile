@@ -33,4 +33,4 @@ RUN mkdir -p /app/scalevision_data/originals \
 EXPOSE 8000
 
 # 9. Comando de arranque del servidor (Sin --reload para producción)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["hypercorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
