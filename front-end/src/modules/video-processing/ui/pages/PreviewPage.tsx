@@ -46,6 +46,18 @@ export const PreviewPage = () => {
     }
   }, [mode, status]);
 
+  useEffect(() => {
+    if (!status && !mode) {
+      return;
+    }
+    console.log("Estado backend:", status ?? "sin estado");
+    console.log("Estado actual:", status ?? "sin estado");
+    console.log("Modo:", mode);
+    if (status && isPolling) {
+      console.log("Estado actual: actualizando...");
+    }
+  }, [isPolling, mode, status]);
+
   const showThumbnails = status === "PROCESADO" && mode === "FACE_TRACKING";
   const thumbnailsQuery = useVideoThumbnails({
     videoId: jobId,
@@ -84,6 +96,11 @@ export const PreviewPage = () => {
   }, [thumbnailsQuery.data]);
 
   const currentVideoUrl = finalVideoQuery.data?.url_video_final || "";
+  const isFinalReady = Boolean(currentVideoUrl);
+  const isCenterCrop = mode === "CENTER_CROP";
+  const canShowFinalUI = isCenterCrop
+    ? status === "CORTADO" && isFinalReady
+    : Boolean(selectedThumbnailId) && isFinalReady;
 
   const handleCutVideo = async () => {
     if (!jobId || !selectedThumbnailId) {
@@ -108,18 +125,6 @@ export const PreviewPage = () => {
           <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
             Vista previa del video reencuadrado
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Estado backend: {status ?? "sin estado"}
-          </p>
-          {status && (
-            <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-2">
-              Estado actual: {status}
-              {isPolling ? " (actualizando...)" : ""}
-            </p>
-          )}
-          <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">
-            Modo: {mode}
-          </p>
           {statusError && (
             <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {statusError}
@@ -171,7 +176,7 @@ export const PreviewPage = () => {
                       <img
                         src={thumb.url}
                         alt={`Mini vista ${thumb.id}`}
-                        className="w-full h-auto"
+                        className="w-full h-20 object-contain bg-black/5"
                       />
                     </button>
                   ))}
@@ -193,39 +198,68 @@ export const PreviewPage = () => {
               </div>
             )}
 
-            <VideoPreviewMock
-              videoUrl={currentVideoUrl}
-              isPlaying={isPlayingVideo}
-              onPlayPauseToggle={setIsPlayingVideo}
-            />
+            {canShowFinalUI ? (
+              <>
+                <VideoPreviewMock
+                  videoUrl={currentVideoUrl}
+                  isPlaying={isPlayingVideo}
+                  onPlayPauseToggle={setIsPlayingVideo}
+                />
 
-            <div className="text-center">
-              <p className="text-text-light dark:text-text-dark text-sm">
-                {status === "CORTADO"
-                  ? "Video final listo"
-                  : "Vista previa del proceso"}
-              </p>
-              <p className="text-text-muted-light dark:text-text-muted-dark text-xs mt-1">
-                {status === "PROCESANDO" || status === "CORTANDO"
-                  ? "Procesando..."
-                  : status === "PROCESADO" && mode === "CENTER_CROP"
-                    ? "Corte automatico en curso"
-                    : status === "PROCESADO"
-                      ? "Selecciona una mini-vista para cortar"
-                      : ""}
-              </p>
-            </div>
+                <div className="text-center">
+                  <p className="text-text-light dark:text-text-dark text-sm">
+                    Video final listo
+                  </p>
+                </div>
 
-            <VideoActions
-              videoUrl={currentVideoUrl}
-              onExportTikTok={() => console.log("Export TikTok")}
-              onExportYouTube={() => console.log("Export YouTube")}
-              onExportInstagram={() => console.log("Export Instagram")}
-              onDownload={(blob: Blob) =>
-                console.log("Video downloaded:", blob)
-              }
-              onProcessAnother={handleProcessAnother}
-            />
+                <VideoActions
+                  videoUrl={currentVideoUrl}
+                  onExportTikTok={() => console.log("Export TikTok")}
+                  onExportYouTube={() => console.log("Export YouTube")}
+                  onExportInstagram={() => console.log("Export Instagram")}
+                  onDownload={(blob: Blob) =>
+                    console.log("Video downloaded:", blob)
+                  }
+                  onProcessAnother={handleProcessAnother}
+                />
+              </>
+            ) : (
+              <div className="w-full max-w-md rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-surface-dark p-6 text-center">
+                <div className="mx-auto h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+                <p className="mt-4 text-sm font-semibold text-text-light dark:text-text-dark">
+                  {status === "CORTANDO"
+                    ? "Generando video vertical"
+                    : "Analizando video"}
+                </p>
+                <div className="mt-4 space-y-2 text-xs text-text-muted-light dark:text-text-muted-dark">
+                  {!isCenterCrop && (
+                    <p
+                      className={
+                        status === "PROCESADO"
+                          ? "text-primary font-semibold"
+                          : ""
+                      }
+                    >
+                      Selecciona una mini-vista para cortar
+                    </p>
+                  )}
+                  <p
+                    className={
+                      status === "CORTANDO" ? "text-primary font-semibold" : ""
+                    }
+                  >
+                    Generando video vertical
+                  </p>
+                  <p
+                    className={
+                      status === "CORTADO" ? "text-primary font-semibold" : ""
+                    }
+                  >
+                    Video final listo
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

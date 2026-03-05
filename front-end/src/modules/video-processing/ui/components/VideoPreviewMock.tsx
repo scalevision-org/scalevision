@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Play, Image as ImageIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { Play, Image as ImageIcon } from "lucide-react";
 
 interface VideoPreviewMockProps {
   videoUrl?: string;
-  videoType?: 'image' | 'video' | 'embed' | 'youtube';
+  videoType?: "image" | "video" | "embed" | "youtube";
   isPlaying?: boolean;
   onPlayPauseToggle?: (isPlaying: boolean) => void;
   isLoading?: boolean;
@@ -24,31 +24,67 @@ const extractYouTubeId = (url: string): string | null => {
   return null;
 };
 
+const isDirectVideoUrl = (url: string): boolean => {
+  const hasVideoExtension = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+  const isCloudinaryVideo = /\/video\/upload\//i.test(url);
+  return hasVideoExtension || isCloudinaryVideo;
+};
+
 export const VideoPreviewMock = ({
   videoUrl,
-  videoType: initialVideoType = 'image',
+  videoType: initialVideoType = "image",
   isPlaying: initialIsPlaying = false,
   onPlayPauseToggle,
   isLoading = false,
 }: VideoPreviewMockProps) => {
   const [isPlaying, setIsPlaying] = useState(initialIsPlaying);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Detectar si es URL de YouTube automáticamente
   let videoType = initialVideoType;
   let effectiveUrl = videoUrl;
 
-  if (videoUrl && videoType === 'image' && videoUrl.includes('youtube.com')) {
-    videoType = 'youtube';
+  if (videoUrl && videoType === "image") {
     const videoId = extractYouTubeId(videoUrl);
     if (videoId) {
+      videoType = "youtube";
       effectiveUrl = `https://www.youtube.com/embed/${videoId}`;
+    } else if (isDirectVideoUrl(videoUrl)) {
+      videoType = "video";
     }
   }
 
-  const handlePlayPause = () => {
-    const newState = !isPlaying;
-    setIsPlaying(newState);
-    onPlayPauseToggle?.(newState);
+  useEffect(() => {
+    setIsPlaying(initialIsPlaying);
+  }, [initialIsPlaying]);
+
+  const handlePlayPause = async () => {
+    if (videoType !== "video") {
+      const newState = !isPlaying;
+      setIsPlaying(newState);
+      onPlayPauseToggle?.(newState);
+      return;
+    }
+
+    const videoElement = videoRef.current;
+    if (!videoElement) {
+      return;
+    }
+
+    if (videoElement.paused) {
+      try {
+        await videoElement.play();
+        setIsPlaying(true);
+        onPlayPauseToggle?.(true);
+      } catch {
+        setIsPlaying(false);
+        onPlayPauseToggle?.(false);
+      }
+    } else {
+      videoElement.pause();
+      setIsPlaying(false);
+      onPlayPauseToggle?.(false);
+    }
   };
 
   const renderPlaceholder = () => (
@@ -71,10 +107,26 @@ export const VideoPreviewMock = ({
       case "video":
         return (
           <video
+            ref={videoRef}
             className="absolute inset-0 w-full h-full object-cover"
             src={effectiveUrl}
             autoPlay={isPlaying}
-            controls={false}
+            muted
+            playsInline
+            preload="metadata"
+            controls
+            onPlay={() => {
+              setIsPlaying(true);
+              onPlayPauseToggle?.(true);
+            }}
+            onPause={() => {
+              setIsPlaying(false);
+              onPlayPauseToggle?.(false);
+            }}
+            onEnded={() => {
+              setIsPlaying(false);
+              onPlayPauseToggle?.(false);
+            }}
           />
         );
       case "embed":

@@ -13,6 +13,21 @@ body {
          min-h-screen transition-colors duration-300;
 }
 
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: pageFade 220ms ease;
+}
 @keyframes subjectMove {
   0% { left: 10%; }
   50% { left: 60%; }
