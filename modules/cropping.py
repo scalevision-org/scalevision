@@ -14,7 +14,7 @@ class VideoCropper:
             output_path = output_path.rsplit('.', 1)[0] + '.mp4'
 
         filtro_base = f"crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale={self.target_resolution[0]}:{self.target_resolution[1]}"
-        cmd = f"ffmpeg -i {video_path} -vf \"{filtro_base}\" -c:v libx264 -c:a aac -y {output_path}"
+        cmd = f"ffmpeg -i \"{video_path}\" -vf \"{filtro_base}\" -c:v libx264 -c:a aac -y \"{output_path}\""
         return cmd
 
     def apply_dynamic_crop(self, video_path, output_path, trajectory, total_frames, fps):
@@ -125,7 +125,7 @@ class VideoCropper:
         out.release()
         
         print("INFO: [FFmpeg] Sincronizando audio con el nuevo inicio temporal...")
-        cmd = f"ffmpeg -i {temp_video} -ss {start_time_sec:.3f} -i {video_path} -c:v libx264 -c:a aac -map 0:v:0 -map 1:a:0? -shortest -y {output_path}"
+        cmd = f"ffmpeg -i \"{temp_video}\" -ss {start_time_sec:.3f} -i \"{video_path}\" -c:v libx264 -c:a aac -map 0:v:0 -map 1:a:0? -shortest -y \"{output_path}\""
         proceso = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         
         if os.path.exists(temp_video):

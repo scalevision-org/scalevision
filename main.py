@@ -1,11 +1,37 @@
 from fastapi import FastAPI, HTTPException, Response, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from models import ScanRequest, ProcessRequest
 import store
 import uuid
 import time
+import os
 from modules.orquestador import ScaleVisionPipeline
 
+# Carpeta donde el Backend MVC copia los videos (app.ai.local-processing-dir debe apuntar aquí)
+INCOMING_FROM_BACKEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "incoming_from_backend")
+
+
+def resolve_video_path(video_path: str) -> str:
+    """Si es solo nombre de archivo, busca primero en incoming_from_backend, luego en cwd."""
+    if not video_path or os.path.sep in video_path:
+        return video_path
+    incoming = os.path.join(INCOMING_FROM_BACKEND_DIR, video_path)
+    if os.path.isfile(incoming):
+        return incoming
+    return video_path
+
 app = FastAPI(title="ScaleVision AI Service - MVP", version="2.2.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/data", StaticFiles(directory="scalevision_data"), name="data")
 
 # 1. Instanciamos el pipeline globalmente al arrancar el worker
 pipeline = ScaleVisionPipeline()
@@ -110,6 +136,7 @@ def start_scan(request: ScanRequest, background_tasks: BackgroundTasks):
         if "/" in str(request.video_url)
         else str(request.video_url)
     )
+    video_path = resolve_video_path(video_path)
 
     store.create_job(job_id_str)
     store.update_job(
@@ -159,11 +186,17 @@ def get_scan_status(id: uuid.UUID, response: Response):
             detail={"error_code": "SCAN_FAILED", "message": job.get("error_message")},
         )
 
+    metadata = job.get("scan_metadata", {})
+    subjects = job.get("subjects", [])
+    for subj in subjects:
+        if subj.get("thumbnail_url") and not subj["thumbnail_url"].startswith("http"):
+            subj["thumbnail_url"] = f"http://localhost:8000/data/thumbnails/{subj['thumbnail_url']}"
+
     return {
         "status": "PROCESADO",
         "message": "Análisis completado",
-        "metadata": job.get("scan_metadata", {}),
-        "subjects": job.get("subjects", []),
+        "metadata": metadata,
+        "subjects": subjects,
         "fallback": job.get(
             "fallback", {"is_active": False, "strategy": None, "reason": None}
         ),
@@ -244,7 +277,7 @@ def get_render_status(id: uuid.UUID, response: Response):
 
     estado_actual = job.get("process_status", "RENDERING")
 
-    if estado_actual == "CORTANDO":
+    if estado_actual in ["CORTANDO", "RENDERING"]:
         response.status_code = 202
         return {"status": "CORTANDO", "message": "FFmpeg ejecutando el recorte"}
 
@@ -254,10 +287,15 @@ def get_render_status(id: uuid.UUID, response: Response):
             detail={"error_code": "RENDER_FAILED", "message": job.get("error_message")},
         )
 
+    output_video_url = job.get("output_video_url")
+    if output_video_url and not output_video_url.startswith("http"):
+        output_filename = os.path.basename(output_video_url)
+        output_video_url = f"http://localhost:8000/data/finals/{output_filename}"
+
     return {
         "id": str(id),
         "status": "CORTADO",
         "message": "Video final generado exitosamente",
-        "output_video_url": job.get("output_video_url"),
+        "output_video_url": output_video_url,
         "metadata": job.get("render_metadata", {}),
     }
