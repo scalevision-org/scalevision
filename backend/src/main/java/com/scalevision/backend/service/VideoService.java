@@ -148,13 +148,19 @@ public class VideoService {
 
     public EstadoVideoResponse obtenerEstado(Long id) {
         VideoPoc video = findVideoOrThrow(id);
-        refrescarScanDesdeIa(video);
+        if (video.getEstado() == VideoStatus.SUBIDO || video.getEstado() == VideoStatus.PROCESANDO) {
+            refrescarScanDesdeIa(video);
+        } else if (video.getEstado() == VideoStatus.CORTAR || video.getEstado() == VideoStatus.CORTANDO) {
+            refrescarProcessDesdeIa(video);
+        }
         return new EstadoVideoResponse(video.getId(), video.getEstado().name(), video.getIaErrorCode(), video.getError());
     }
 
     public MiniVistasResponse obtenerMiniVistas(Long id) {
         VideoPoc video = findVideoOrThrow(id);
-        refrescarScanDesdeIa(video);
+        if (video.getEstado() == VideoStatus.SUBIDO || video.getEstado() == VideoStatus.PROCESANDO) {
+            refrescarScanDesdeIa(video);
+        }
 
         if (video.getEstado() != VideoStatus.PROCESADO && video.getEstado() != VideoStatus.CORTAR
                 && video.getEstado() != VideoStatus.CORTANDO && video.getEstado() != VideoStatus.CORTADO) {
@@ -212,7 +218,9 @@ public class VideoService {
 
     public VideoFinalResponse obtenerVideoFinal(Long id) {
         VideoPoc video = findVideoOrThrow(id);
-        refrescarProcessDesdeIa(video);
+        if (video.getEstado() == VideoStatus.CORTAR || video.getEstado() == VideoStatus.CORTANDO) {
+            refrescarProcessDesdeIa(video);
+        }
 
         if (video.getEstado() != VideoStatus.CORTADO) {
             throw new BadRequestException("El video final aun no esta listo");

@@ -27,9 +27,11 @@ spring:
 
 app:
   cors:
-    allowed-origins: http://localhost:3000
+    # Incluir el origen del frontend (Vite por defecto usa 5173)
+    allowed-origins: http://localhost:3000,http://localhost:5173
   storage:
     upload-dir: uploads
   ai:
     base-url: http://localhost:8000
-    local-processing-dir: /tmp/scalevision-ia-check
+    # Carpeta en el proyecto IA donde el BE copia el video; la IA lee desde incoming_from_backend
+    local-processing-dir: C:/Programacion Local/scalevision/incoming_from_backend

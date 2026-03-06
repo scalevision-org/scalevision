@@ -1,8 +1,11 @@
 package com.scalevision.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class UploadVideoResponse {
 
     private Long id;
+    @JsonProperty("url_video_original")
     private String urlVideoOriginal;
     private String estado;
 
