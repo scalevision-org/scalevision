@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Play, Image as ImageIcon } from 'lucide-react';
 
 interface VideoPreviewMockProps {
@@ -7,6 +7,7 @@ interface VideoPreviewMockProps {
   isPlaying?: boolean;
   onPlayPauseToggle?: (isPlaying: boolean) => void;
   isLoading?: boolean;
+  isProcessing?: boolean;
 }
 
 const extractYouTubeId = (url: string): string | null => {
@@ -27,11 +28,12 @@ const extractYouTubeId = (url: string): string | null => {
 export const VideoPreviewMock = ({
   videoUrl,
   videoType: initialVideoType = 'image',
-  isPlaying: initialIsPlaying = false,
+  isPlaying = false,
   onPlayPauseToggle,
   isLoading = false,
+  isProcessing = false,
 }: VideoPreviewMockProps) => {
-  const [isPlaying, setIsPlaying] = useState(initialIsPlaying);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Detectar si es URL de YouTube automáticamente
   let videoType = initialVideoType;
@@ -45,10 +47,26 @@ export const VideoPreviewMock = ({
     }
   }
 
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.play().catch(console.error);
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isPlaying, effectiveUrl]);
+
   const handlePlayPause = () => {
     const newState = !isPlaying;
-    setIsPlaying(newState);
     onPlayPauseToggle?.(newState);
+    if (videoRef.current) {
+      if (newState) {
+        videoRef.current.play().catch(console.error);
+      } else {
+        videoRef.current.pause();
+      }
+    }
   };
 
   const renderPlaceholder = () => (
@@ -57,7 +75,7 @@ export const VideoPreviewMock = ({
         <ImageIcon className="w-12 h-12 text-gray-600 mb-3" />
       </div>
       <p className="text-gray-500 text-xs text-center px-4">
-        No video available
+        {isProcessing ? "Procesando video... Esto puede tomar un momento" : "Video no disponible"}
       </p>
     </div>
   );
@@ -71,10 +89,12 @@ export const VideoPreviewMock = ({
       case 'video':
         return (
           <video
+            ref={videoRef}
             className="absolute inset-0 w-full h-full object-cover"
             src={effectiveUrl}
-            autoPlay={isPlaying}
             controls={false}
+            loop
+            playsInline
           />
         );
       case 'embed':

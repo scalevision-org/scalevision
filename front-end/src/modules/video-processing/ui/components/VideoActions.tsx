@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 interface VideoActionsProps {
   videoUrl?: string;
@@ -65,7 +65,7 @@ export const VideoActions = ({
   onProcessAnother,
 }: VideoActionsProps) => {
   const [isDownloading, setIsDownloading] = useState(false);
-const handleExport = async (platform: string, url?: string) => {
+  const handleExport = async (platform: string, url?: string) => {
     try {
       if (!url) {
         throw new Error('Missing export URL');
@@ -96,7 +96,7 @@ const handleExport = async (platform: string, url?: string) => {
     }
   };
 
-    const handleDownload = (fileUrl?: string) => {
+  const handleDownload = async (fileUrl?: string) => {
     try {
       if (!fileUrl) {
         throw new Error('Missing file URL');
@@ -104,10 +104,25 @@ const handleExport = async (platform: string, url?: string) => {
 
       setIsDownloading(true);
 
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error('Network error');
+
+      const rawBlob = await response.blob();
+      // Create a new blob with explicit MIME type to force download instead of display
+      const blob = new Blob([rawBlob], { type: 'video/mp4' });
+      const url = window.URL.createObjectURL(blob);
+
       const link = document.createElement('a');
-      link.href = fileUrl;
-      link.download = 'processed-video.mp4';
+      link.style.display = 'none';
+      link.href = url;
+      link.setAttribute('download', 'scalevision-video.mp4');
+      document.body.appendChild(link);
       link.click();
+
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 1000);
 
       toast('Download started 💾', {
         description: 'Your video is being saved to your device.',
@@ -195,17 +210,17 @@ const handleExport = async (platform: string, url?: string) => {
       <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
         Al exportar, la URL se copiará al portapapeles y se abrirá la plataforma
       </p>
-  <button
-  type="button"
-  onClick={onProcessAnother}//////
-  className="w-full mt-3 rounded-full border border-gray-200 dark:border-white/10 
+      <button
+        type="button"
+        onClick={onProcessAnother}//////
+        className="w-full mt-3 rounded-full border border-gray-200 dark:border-white/10 
              bg-white dark:bg-surface-dark px-4 py-2.5 text-sm font-semibold 
              text-text-light dark:text-text-dark transition-all
              hover:border-primary/50 hover:text-primary
              active:scale-95"
->
-  Process another video
-</button>
+      >
+        Process another video
+      </button>
 
     </div>
   );

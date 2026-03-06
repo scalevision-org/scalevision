@@ -23,7 +23,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://20.228.66.108:8086",
+        target: "http://localhost:8080/svmvp",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ""),

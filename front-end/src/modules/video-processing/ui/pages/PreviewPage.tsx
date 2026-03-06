@@ -57,6 +57,18 @@ export const PreviewPage = () => {
     enabled: Boolean(jobId) && status === "CORTADO",
   });
 
+  useEffect(() => {
+    if (status === "PROCESADO" && mode === "CENTER_CROP" && !cutSent && !cutMutation.isPending) {
+      setCutSent(true);
+      if (jobId) {
+        cutMutation.mutateAsync({
+          videoId: jobId,
+          payload: { mini_vista_id: "auto_center_crop" },
+        }).then(() => refreshStatus()).catch(console.error);
+      }
+    }
+  }, [status, mode, cutSent, jobId, cutMutation, refreshStatus]);
+
   const handleProcessAnother = () => {
     navigate("/upload");
   };
@@ -90,10 +102,12 @@ export const PreviewPage = () => {
       return;
     }
 
+    const selectedThumb = thumbnailOptions.find((t) => t.id === selectedThumbnailId);
+
     await cutMutation.mutateAsync({
       videoId: jobId,
       payload: {
-        mini_vista_id: selectedThumbnailId,
+        mini_vista_id: selectedThumb?.url || selectedThumbnailId,
       },
     });
 
@@ -103,50 +117,37 @@ export const PreviewPage = () => {
 
   return (
     <div className="min-h-screen bg-bg-light dark:bg-bg-dark transition-colors">
-      <div className="bg-white dark:bg-bg-dark  dark:border-white/5 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">
-            Reframed Video Preview
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Estado backend: {status ?? "sin estado"}
-          </p>
-          {status && (
-            <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-2">
-              Estado actual: {status}
-              {isPolling ? " (actualizando...)" : ""}
-            </p>
-          )}
-          <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">
-            Modo: {mode}
-          </p>
-          {statusError && (
-            <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {statusError}
-            </div>
-          )}
-          {thumbnailsQuery.error && (
-            <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              Error al obtener mini-vistas.
-            </div>
-          )}
-          {cutMutation.error && (
-            <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              Error al enviar mini-vista.
-            </div>
-          )}
-          {finalVideoQuery.error && (
-            <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              Error al obtener el video final.
-            </div>
-          )}
-          {!jobId && (
-            <div className="mt-3 w-full max-w-xl rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
-              No se encontro el id del video. Vuelve a la pagina de upload.
-            </div>
-          )}
+      {(statusError || thumbnailsQuery.error || cutMutation.error || finalVideoQuery.error || !jobId) && (
+        <div className="bg-white dark:bg-bg-dark dark:border-white/5 transition-colors">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {statusError && (
+              <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {statusError}
+              </div>
+            )}
+            {thumbnailsQuery.error && (
+              <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                Error al obtener mini-vistas.
+              </div>
+            )}
+            {cutMutation.error && (
+              <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                Error al enviar mini-vista.
+              </div>
+            )}
+            {finalVideoQuery.error && (
+              <div className="mt-3 w-full max-w-xl rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                Error al obtener el video final.
+              </div>
+            )}
+            {!jobId && (
+              <div className="mt-3 w-full max-w-xl rounded-xl border border-amber-300/40 bg-amber-100/60 px-4 py-3 text-sm text-amber-800">
+                No se encontro el id del video. Vuelve a la pagina de upload.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex justify-evenly flex-col sm:flex-row gap-8">
@@ -162,11 +163,10 @@ export const PreviewPage = () => {
                       key={thumb.id}
                       type="button"
                       onClick={() => setSelectedThumbnailId(thumb.id)}
-                      className={`rounded-lg border-2 overflow-hidden transition-all ${
-                        selectedThumbnailId === thumb.id
-                          ? "border-primary"
-                          : "border-transparent"
-                      }`}
+                      className={`rounded-xl border-4 overflow-hidden transition-all duration-300 ${selectedThumbnailId === thumb.id
+                        ? "border-primary scale-105 ring-4 ring-primary/30 shadow-2xl"
+                        : "border-transparent opacity-70 hover:opacity-100"
+                        }`}
                     >
                       <img
                         src={thumb.url}
@@ -195,8 +195,10 @@ export const PreviewPage = () => {
 
             <VideoPreviewMock
               videoUrl={currentVideoUrl}
+              videoType={currentVideoUrl ? "video" : undefined}
               isPlaying={isPlayingVideo}
               onPlayPauseToggle={setIsPlayingVideo}
+              isProcessing={!currentVideoUrl && status !== "ERROR" && status !== null}
             />
 
             <div className="text-center">
