@@ -17,7 +17,7 @@ El servidor de destino debe contar con:
 ScaleVision maneja sus microservicios en tres repositorios (o carpetas) independientes.
 Asegúrate de clonar/posicionar los 3 repositorios **en el mismo directorio padre** para que los contextos de construcción en el `docker-compose.yml` funcionen correctamente por rutas relativas.
 
-La estructura esperada en el servidor es:
+La estructura de **carpetas** esperada en el disco duro del servidor es:
 ```text
 /ruta_padre/
  ├── scalevision/                  <-- Repositorio IA (Contiene este archivo y el docker-compose)
@@ -25,10 +25,11 @@ La estructura esperada en el servidor es:
  └── scalevision-frontend/         <-- Repositorio React/Vite (Frontend)
 ```
 
-Asegúrate de estar posicionado en las ramas correctas de integración:
-- IA: `integration-ia-jorge-castro`
-- Backend: `integration-backend-jorge-castro`
-- Frontend: `integration-front-jorge-castro`
+> **IMPORTANTE SOBRE LAS RAMAS (Git Branches):**
+> Aunque las carpetas se llamen así, debes asegurarte de hacer `git checkout` en cada una de ellas hacia las ramas de integración correctas de Jorge Castro, que es donde vive el código de producción:
+> - Dentro de la carpeta `scalevision/`: `git checkout integration-ia-jorge-castro`
+> - Dentro de la carpeta `scalevision-sv-be-mvc/`: `git checkout integration-backend-jorge-castro`
+> - Dentro de la carpeta `scalevision-frontend/`: `git checkout integration-front-jorge-castro`
 
 ---
 
