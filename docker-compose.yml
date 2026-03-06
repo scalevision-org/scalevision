@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  ai:
+    build:
+      context: . # En la misma carpeta scalevision (IA)
+      dockerfile: Dockerfile
+    container_name: scalevision_ai
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./scalevision_data:/app/scalevision_data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../scalevision-sv-be-mvc/backend # Ruta relativa a la carpeta del backend
+      dockerfile: Dockerfile
+    container_name: scalevision_backend
+    environment:
+      # Sobrescribimos la URL de la IA para que en lugar de http://localhost:8000 apunte al contenedor interno
+      - APP_AI_BASEURL=http://ai:8000 
+    depends_on:
+      - ai
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../scalevision-frontend/front-end # Ruta relativa al frontend
+      dockerfile: Dockerfile
+    container_name: scalevision_frontend
+    environment:
+      # El frontend consumirá el API mediante Nginx (puerto 80) localmente, o el dominio real
+      - VITE_API_URL=/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: scalevision_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+      - ai
+    restart: always
